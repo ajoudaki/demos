@@ -5,6 +5,7 @@ import TestDataGeneration from './demos/TestDataGeneration'
 import TestNetworkVisualization from './demos/TestNetworkVisualization'
 import TestLossChart from './demos/TestLossChart'
 import TestHeatmapVisualization from './demos/TestHeatmapVisualization'
+import TestActivationHeatmap from './demos/TestActivationHeatmap'
 
 function App() {
   const [currentView, setCurrentView] = useState('demo');
@@ -39,6 +40,7 @@ function App() {
           <option value="test-network-vis">Test Network Visualization</option>
           <option value="test-loss-chart">Test Loss Chart</option>
           <option value="test-heatmap">Test Heatmap</option>
+          <option value="test-activation-heatmap">Test Activation Heatmap</option>
         </select>
       </div>
       
@@ -48,6 +50,7 @@ function App() {
       {currentView === 'test-network-vis' && <TestNetworkVisualization />}
       {currentView === 'test-loss-chart' && <TestLossChart />}
       {currentView === 'test-heatmap' && <TestHeatmapVisualization />}
+      {currentView === 'test-activation-heatmap' && <TestActivationHeatmap />}
     </div>
   )
 }
