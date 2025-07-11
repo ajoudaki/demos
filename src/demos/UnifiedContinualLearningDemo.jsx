@@ -391,7 +391,6 @@ const UnifiedContinualLearningDemo = () => {
 
   return (
     <div style={{ padding: '20px', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <h2 style={{ margin: '0 0 10px 0' }}>Unified Continual Learning Demo</h2>
 
       {/* Control Panel - All controls in one flexible block */}
       <div style={{
@@ -427,115 +426,102 @@ const UnifiedContinualLearningDemo = () => {
 
           {/* Architecture & Task Section */}
           <div style={{ 
-            flex: '1 1 280px',
-            backgroundColor: '#e8f4f8',
-            padding: '12px',
-            borderRadius: '6px',
-            border: '1px solid #b8e0ea'
+            flex: '1 1 400px',
+            display: 'flex',
+            gap: '15px',
+            flexWrap: 'wrap',
+            alignItems: 'center'
           }}>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Architecture & Task</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '8px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '3px', fontSize: '11px', fontWeight: 'bold' }}>
-                  Activation
-                </label>
-                <select
-                  value={activationType}
-                  onChange={(e) => handleActivationTypeChange(e.target.value)}
-                  disabled={isTraining}
-                  style={{
-                    width: '100%',
-                    padding: '3px',
-                    fontSize: '12px',
-                    borderRadius: '4px',
-                    border: '1px solid #ced4da'
-                  }}
-                >
-                  <option value="tanh">Tanh</option>
-                  <option value="relu">ReLU</option>
-                  <option value="leakyRelu">Leaky ReLU</option>
-                  <option value="sigmoid">Sigmoid</option>
-                </select>
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', marginBottom: '3px', fontSize: '11px', fontWeight: 'bold' }}>
-                  Layers
-                </label>
-                <input
-                  type="number"
-                  value={hiddenLayers.length}
-                  onChange={(e) => {
-                    const depth = Math.max(1, Math.min(4, parseInt(e.target.value) || 1));
-                    const newLayers = Array(depth).fill(hiddenLayers[0] || 4);
-                    handleArchitectureChange(newLayers);
-                  }}
-                  min="1"
-                  max="4"
-                  style={{ 
-                    width: '50px',
-                    padding: '3px',
-                    fontSize: '12px',
-                    borderRadius: '4px',
-                    border: '1px solid #ced4da'
-                  }}
-                  disabled={isTraining}
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', marginBottom: '3px', fontSize: '11px', fontWeight: 'bold' }}>
-                  Width
-                </label>
-                <input
-                  type="number"
-                  value={hiddenLayers[0]}
-                  onChange={(e) => {
-                    const width = Math.max(1, Math.min(8, parseInt(e.target.value) || 1));
-                    const newLayers = hiddenLayers.map(() => width);
-                    handleArchitectureChange(newLayers);
-                  }}
-                  min="1"
-                  max="8"
-                  style={{ 
-                    width: '50px',
-                    padding: '3px',
-                    fontSize: '12px',
-                    borderRadius: '4px',
-                    border: '1px solid #ced4da'
-                  }}
-                  disabled={isTraining}
-                />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', marginBottom: '3px', fontSize: '11px', fontWeight: 'bold' }}>
-                  Task
-                </label>
-                <select
-                  value={dataType}
-                  onChange={(e) => handleTaskSwitch(e.target.value)}
-                  disabled={isTraining}
-                  style={{
-                    width: '100%',
-                    padding: '3px',
-                    fontSize: '12px',
-                    borderRadius: '4px',
-                    border: '1px solid #ced4da'
-                  }}
-                >
-                  {tasks.map(task => (
-                    <option key={task} value={task}>{task.toUpperCase()}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px' }}>
+              Activation:
+              <select
+                value={activationType}
+                onChange={(e) => handleActivationTypeChange(e.target.value)}
+                disabled={isTraining}
+                style={{
+                  padding: '3px',
+                  fontSize: '12px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da'
+                }}
+              >
+                <option value="tanh">Tanh</option>
+                <option value="relu">ReLU</option>
+                <option value="leakyRelu">Leaky ReLU</option>
+                <option value="sigmoid">Sigmoid</option>
+              </select>
+            </label>
+            
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px' }}>
+              Layers:
+              <input
+                type="number"
+                value={hiddenLayers.length}
+                onChange={(e) => {
+                  const depth = Math.max(1, Math.min(4, parseInt(e.target.value) || 1));
+                  const newLayers = Array(depth).fill(hiddenLayers[0] || 4);
+                  handleArchitectureChange(newLayers);
+                }}
+                min="1"
+                max="4"
+                style={{ 
+                  width: '40px',
+                  padding: '3px',
+                  fontSize: '12px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da'
+                }}
+                disabled={isTraining}
+              />
+            </label>
+            
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px' }}>
+              Width:
+              <input
+                type="number"
+                value={hiddenLayers[0]}
+                onChange={(e) => {
+                  const width = Math.max(1, Math.min(8, parseInt(e.target.value) || 1));
+                  const newLayers = hiddenLayers.map(() => width);
+                  handleArchitectureChange(newLayers);
+                }}
+                min="1"
+                max="8"
+                style={{ 
+                  width: '40px',
+                  padding: '3px',
+                  fontSize: '12px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da'
+                }}
+                disabled={isTraining}
+              />
+            </label>
+            
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px' }}>
+              Task:
+              <select
+                value={dataType}
+                onChange={(e) => handleTaskSwitch(e.target.value)}
+                disabled={isTraining}
+                style={{
+                  padding: '3px',
+                  fontSize: '12px',
+                  borderRadius: '4px',
+                  border: '1px solid #ced4da'
+                }}
+              >
+                {tasks.map(task => (
+                  <option key={task} value={task}>{task.toUpperCase()}</option>
+                ))}
+              </select>
+            </label>
             {taskHistory.length > 1 && (
-              <div style={{ marginTop: '8px', fontSize: '10px', color: '#666' }}>
-                <strong>History:</strong> {taskHistory.map((t) => 
+              <span style={{ fontSize: '10px', color: '#666' }}>
+                History: {taskHistory.map((t) => 
                   `${t.task}(E${t.startEpoch})`
                 ).join(' → ')}
-              </div>
+              </span>
             )}
           </div>
 
