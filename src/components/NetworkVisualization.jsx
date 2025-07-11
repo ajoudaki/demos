@@ -130,27 +130,41 @@ const NetworkVisualization = ({
     
     const colorScale = d3.scaleLinear()
       .domain([-2, 0, 2])
-      .range(['#e74c3c', '#cccccc', '#3498db'])
+      .range(['#e74c3c', '#f5f5f5', '#3498db'])
       .clamp(true);
 
     const widthScale = d3.scaleLinear()
       .domain([0, 2])
-      .range([1, 5])
+      .range([1, 6])
       .clamp(true);
+
+    // Function to create curved path
+    const getCurvedPath = (d) => {
+      const source = nodes.find(n => n.id === d.source);
+      const target = nodes.find(n => n.id === d.target);
+      const sx = source.x;
+      const sy = source.y;
+      const tx = target.x;
+      const ty = target.y;
+      const midX = sx + (tx - sx) * 0.6;
+      return `M${sx},${sy} C${midX},${sy} ${midX},${ty} ${tx},${ty}`;
+    };
 
     // Draw links after we know if we're using square nodes
     const drawLinks = () => {
-      linkGroup.selectAll('line')
-        .data(links)
-        .enter()
-        .append('line')
-        .attr('x1', d => nodes.find(n => n.id === d.source).x)
-        .attr('y1', d => nodes.find(n => n.id === d.source).y)
-        .attr('x2', d => nodes.find(n => n.id === d.target).x)
-        .attr('y2', d => nodes.find(n => n.id === d.target).y)
+      const linkSelection = linkGroup.selectAll('path')
+        .data(links);
+        
+      linkSelection.enter()
+        .append('path')
+        .attr('class', 'link')
+        .attr('id', d => `link-${d.source}-${d.target}`)
+        .attr('fill', 'none')
+        .attr('d', getCurvedPath)
         .attr('stroke', d => colorScale(d.weight))
         .attr('stroke-width', d => widthScale(Math.abs(d.weight)))
-        .attr('opacity', 0.6);
+        .attr('stroke-opacity', 0.6)
+        .style('transition', 'opacity 0.3s, stroke-width 0.3s, stroke-opacity 0.3s');
     };
 
     // Draw nodes
@@ -294,9 +308,10 @@ const NetworkVisualization = ({
           .attr('rx', borderRadius)
           .attr('ry', borderRadius)
           .attr('fill', 'none')
-          .attr('stroke', '#333')
-          .attr('stroke-width', 2)
-          .style('cursor', 'pointer');
+          .attr('stroke', '#000')
+          .attr('stroke-width', 1.5)
+          .style('cursor', 'pointer')
+          .style('transition', 'opacity 0.3s');
           
         // Add invisible larger rect for better click detection
         nodeGroup.append('rect')
@@ -318,10 +333,64 @@ const NetworkVisualization = ({
             }
           })
           .on('mouseenter', function() {
-            rect.attr('stroke-width', 3).attr('stroke', '#0066cc');
+            // Dim all nodes and links first
+            nodeGroup.selectAll('.node, rect').style('opacity', 0.15);
+            linkGroup.selectAll('path')
+              .style('opacity', 0.15)
+              .attr('stroke-opacity', 0.15);
+            
+            // Highlight the node with full opacity
+            rect.attr('stroke-width', 3).attr('stroke', '#ff9900').style('opacity', 1);
+            d3.select(this.parentNode).selectAll('*').style('opacity', 1); // Ensure the heatmap is also visible
+            
+            // Find and highlight connected links and nodes
+            const connectedNodes = new Set();
+            
+            // Highlight incoming links with full color
+            linkGroup.selectAll('path')
+              .filter(d => d.target === node.id)
+              .style('opacity', 1)
+              .attr('stroke-opacity', 0.8)
+              .attr('stroke-width', d => widthScale(Math.abs(d.weight)) * 1.5)
+              .each(d => connectedNodes.add(d.source));
+            
+            // Highlight outgoing links with full color
+            linkGroup.selectAll('path')
+              .filter(d => d.source === node.id)
+              .style('opacity', 1)
+              .attr('stroke-opacity', 0.8)
+              .attr('stroke-width', d => widthScale(Math.abs(d.weight)) * 1.5)
+              .each(d => connectedNodes.add(d.target));
+            
+            // Highlight connected nodes
+            connectedNodes.forEach(nodeId => {
+              const connectedNode = nodes.find(n => n.id === nodeId);
+              if (connectedNode) {
+                nodeGroup.selectAll('rect')
+                  .filter(function() {
+                    const nodeData = d3.select(this.parentNode).datum();
+                    return nodeData && nodeData.id === nodeId;
+                  })
+                  .style('opacity', 1);
+                // Also make the heatmap visible for connected nodes
+                nodeGroup.selectAll('g')
+                  .filter(function() {
+                    const nodeData = d3.select(this).datum();
+                    return nodeData && nodeData.id === nodeId;
+                  })
+                  .selectAll('*')
+                  .style('opacity', 1);
+              }
+            });
           })
           .on('mouseleave', function() {
-            rect.attr('stroke-width', 2).attr('stroke', '#333');
+            // Reset all styling
+            rect.attr('stroke-width', 1.5).attr('stroke', '#000');
+            nodeGroup.selectAll('.node, rect').style('opacity', 1);
+            linkGroup.selectAll('path')
+              .style('opacity', 1)
+              .attr('stroke-opacity', 0.6)
+              .attr('stroke-width', d => widthScale(Math.abs(d.weight)));
           });
       });
     } else {
@@ -338,30 +407,48 @@ const NetworkVisualization = ({
         .attr('stroke-width', 2)
         .style('cursor', 'pointer')
         .on('mouseover', function(event, d) {
-          // Highlight connected links
-          linkGroup.selectAll('line')
-            .style('opacity', link => 
-              (link.source === d.id || link.target === d.id) ? 1 : 0.2
-            )
-            .style('stroke-width', link =>
-              (link.source === d.id || link.target === d.id) ? widthScale(Math.abs(link.weight)) * 1.5 : widthScale(Math.abs(link.weight))
-            );
+          // Dim all nodes and links
+          nodeGroup.selectAll('circle').style('opacity', 0.15);
+          linkGroup.selectAll('path')
+            .style('opacity', 0.15)
+            .attr('stroke-opacity', 0.15);
           
-          // Highlight the node
+          // Highlight this node with full opacity
           d3.select(this)
+            .style('opacity', 1)
             .attr('stroke-width', 3)
-            .attr('fill', '#98d3ff');
+            .attr('stroke', '#ff9900');
+          
+          // Find and highlight connected links and nodes
+          const connectedNodes = new Set();
+          
+          // Highlight connected links with full color
+          linkGroup.selectAll('path')
+            .filter(link => link.source === d.id || link.target === d.id)
+            .style('opacity', 1)
+            .attr('stroke-opacity', 0.8)
+            .attr('stroke-width', link => widthScale(Math.abs(link.weight)) * 1.5)
+            .each(link => {
+              if (link.source === d.id) connectedNodes.add(link.target);
+              if (link.target === d.id) connectedNodes.add(link.source);
+            });
+          
+          // Highlight connected nodes
+          nodeGroup.selectAll('circle')
+            .filter(node => connectedNodes.has(node.id))
+            .style('opacity', 1);
         })
         .on('mouseout', function() {
-          // Reset links
-          linkGroup.selectAll('line')
-            .style('opacity', 0.6)
-            .style('stroke-width', d => widthScale(Math.abs(d.weight)));
-          
-          // Reset node
-          d3.select(this)
+          // Reset all styling
+          nodeGroup.selectAll('circle')
+            .style('opacity', 1)
             .attr('stroke-width', 2)
-            .attr('fill', '#bde0ff');
+            .attr('stroke', '#333');
+            
+          linkGroup.selectAll('path')
+            .style('opacity', 1)
+            .attr('stroke-opacity', 0.6)
+            .attr('stroke-width', d => widthScale(Math.abs(d.weight)));
         });
     }
 
