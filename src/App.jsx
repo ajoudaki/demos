@@ -11,9 +11,10 @@ import IntegratedTrainingDemo from './demos/IntegratedTrainingDemo'
 import IntegratedTrainingDemoSimple from './demos/IntegratedTrainingDemoSimple'
 import ContinualLearningFeatureDemo from './demos/ContinualLearningFeatureDemo'
 import ModelHistoryDemo from './demos/ModelHistoryDemo'
+import MainDemo from './demos/MainDemo'
 
 function App() {
-  const [currentView, setCurrentView] = useState('demo');
+  const [currentView, setCurrentView] = useState('main');
 
   return (
     <div style={{ width: '100%', height: '100vh', margin: 0, padding: 0 }}>
@@ -39,7 +40,8 @@ function App() {
             cursor: 'pointer'
           }}
         >
-          <option value="demo">Main Demo</option>
+          <option value="main">Home</option>
+          <option value="demo">Original Demo</option>
           <option value="test-nn">Test Neural Network</option>
           <option value="test-data">Test Data Generation</option>
           <option value="test-network-vis">Test Network Visualization</option>
@@ -54,6 +56,7 @@ function App() {
         </select>
       </div>
       
+      {currentView === 'main' && <MainDemo />}
       {currentView === 'demo' && <ContinualLearningDemoWrapper />}
       {currentView === 'test-nn' && <TestNeuralNetwork />}
       {currentView === 'test-data' && <TestDataGeneration />}

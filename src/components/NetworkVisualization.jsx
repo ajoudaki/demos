@@ -121,7 +121,34 @@ const NetworkVisualization = ({
       .attr('r', 15)
       .attr('fill', '#bde0ff')
       .attr('stroke', '#333')
-      .attr('stroke-width', 2);
+      .attr('stroke-width', 2)
+      .style('cursor', 'pointer')
+      .on('mouseover', function(event, d) {
+        // Highlight connected links
+        linkGroup.selectAll('line')
+          .style('opacity', link => 
+            (link.source === d.id || link.target === d.id) ? 1 : 0.2
+          )
+          .style('stroke-width', link =>
+            (link.source === d.id || link.target === d.id) ? widthScale(Math.abs(link.weight)) * 1.5 : widthScale(Math.abs(link.weight))
+          );
+        
+        // Highlight the node
+        d3.select(this)
+          .attr('stroke-width', 3)
+          .attr('fill', '#98d3ff');
+      })
+      .on('mouseout', function() {
+        // Reset links
+        linkGroup.selectAll('line')
+          .style('opacity', 0.6)
+          .style('stroke-width', d => widthScale(Math.abs(d.weight)));
+        
+        // Reset node
+        d3.select(this)
+          .attr('stroke-width', 2)
+          .attr('fill', '#bde0ff');
+      });
 
     // Add labels for neurons
     const labelGroup = g.append('g').attr('class', 'labels');
