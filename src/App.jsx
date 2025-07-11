@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import ContinualLearningDemoWrapper from './demos/ContinualLearningDemoWrapper'
 import TestNeuralNetwork from './demos/TestNeuralNetwork'
 import TestDataGeneration from './demos/TestDataGeneration'
@@ -14,8 +15,30 @@ import ModelHistoryDemo from './demos/ModelHistoryDemo'
 import MainDemo from './demos/MainDemo'
 import TestNetworkVisualizationWithHeatmaps from './demos/TestNetworkVisualizationWithHeatmaps'
 
-function App() {
-  const [currentView, setCurrentView] = useState('main');
+const routes = [
+  { path: '/', name: 'Home', component: MainDemo },
+  { path: '/demo', name: 'Original Demo', component: ContinualLearningDemoWrapper },
+  { path: '/test-nn', name: 'Test Neural Network', component: TestNeuralNetwork },
+  { path: '/test-data', name: 'Test Data Generation', component: TestDataGeneration },
+  { path: '/test-network-vis', name: 'Test Network Visualization', component: TestNetworkVisualization },
+  { path: '/test-network-vis-heatmaps', name: 'Network Visualization with Heatmaps', component: TestNetworkVisualizationWithHeatmaps },
+  { path: '/test-loss-chart', name: 'Test Loss Chart', component: TestLossChart },
+  { path: '/test-heatmap', name: 'Test Heatmap', component: TestHeatmapVisualization },
+  { path: '/test-activation-heatmap', name: 'Test Activation Heatmap', component: TestActivationHeatmap },
+  { path: '/test-training-controls', name: 'Test Training Controls', component: TestTrainingControls },
+  { path: '/integrated-training', name: 'Integrated Training Demo', component: IntegratedTrainingDemo },
+  { path: '/integrated-training-simple', name: 'Integrated Training (Simple)', component: IntegratedTrainingDemoSimple },
+  { path: '/continual-learning', name: 'Continual Learning', component: ContinualLearningFeatureDemo },
+  { path: '/model-history', name: 'Model History', component: ModelHistoryDemo },
+];
+
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
 
   return (
     <div style={{ width: '100%', height: '100vh', margin: 0, padding: 0 }}>
@@ -30,8 +53,8 @@ function App() {
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
         <select 
-          value={currentView}
-          onChange={(e) => setCurrentView(e.target.value)}
+          value={location.pathname}
+          onChange={(e) => handleNavigate(e.target.value)}
           style={{
             padding: '8px 12px',
             fontSize: '14px',
@@ -41,39 +64,33 @@ function App() {
             cursor: 'pointer'
           }}
         >
-          <option value="main">Home</option>
-          <option value="demo">Original Demo</option>
-          <option value="test-nn">Test Neural Network</option>
-          <option value="test-data">Test Data Generation</option>
-          <option value="test-network-vis">Test Network Visualization</option>
-          <option value="test-network-vis-heatmaps">Network Visualization with Heatmaps</option>
-          <option value="test-loss-chart">Test Loss Chart</option>
-          <option value="test-heatmap">Test Heatmap</option>
-          <option value="test-activation-heatmap">Test Activation Heatmap</option>
-          <option value="test-training-controls">Test Training Controls</option>
-          <option value="integrated-training">Integrated Training Demo</option>
-          <option value="integrated-training-simple">Integrated Training (Simple)</option>
-          <option value="continual-learning">Continual Learning</option>
-          <option value="model-history">Model History</option>
+          {routes.map(route => (
+            <option key={route.path} value={route.path}>
+              {route.name}
+            </option>
+          ))}
         </select>
       </div>
       
-      {currentView === 'main' && <MainDemo />}
-      {currentView === 'demo' && <ContinualLearningDemoWrapper />}
-      {currentView === 'test-nn' && <TestNeuralNetwork />}
-      {currentView === 'test-data' && <TestDataGeneration />}
-      {currentView === 'test-network-vis' && <TestNetworkVisualization />}
-      {currentView === 'test-network-vis-heatmaps' && <TestNetworkVisualizationWithHeatmaps />}
-      {currentView === 'test-loss-chart' && <TestLossChart />}
-      {currentView === 'test-heatmap' && <TestHeatmapVisualization />}
-      {currentView === 'test-activation-heatmap' && <TestActivationHeatmap />}
-      {currentView === 'test-training-controls' && <TestTrainingControls />}
-      {currentView === 'integrated-training' && <IntegratedTrainingDemo />}
-      {currentView === 'integrated-training-simple' && <IntegratedTrainingDemoSimple />}
-      {currentView === 'continual-learning' && <ContinualLearningFeatureDemo />}
-      {currentView === 'model-history' && <ModelHistoryDemo />}
+      <Routes>
+        {routes.map(route => (
+          <Route 
+            key={route.path} 
+            path={route.path} 
+            element={<route.component />} 
+          />
+        ))}
+      </Routes>
     </div>
   )
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
 }
 
 export default App

@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const MainDemo = () => {
+  const navigate = useNavigate();
   const demos = [
     {
       title: "Original Continual Learning Demo",
@@ -67,12 +69,7 @@ const MainDemo = () => {
   ];
 
   const navigateTo = (path) => {
-    // Get the dropdown and trigger change
-    const dropdown = document.querySelector('select');
-    if (dropdown) {
-      dropdown.value = path;
-      dropdown.dispatchEvent(new Event('change', { bubbles: true }));
-    }
+    navigate(`/${path}`);
   };
 
   return (
