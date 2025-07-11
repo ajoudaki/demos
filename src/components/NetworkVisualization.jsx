@@ -346,32 +346,20 @@ const NetworkVisualization = ({
             // Find and highlight connected links and nodes
             const connectedNodes = new Set();
             
-            // Highlight incoming links with full color
+            // Highlight incoming links with full opacity
             linkGroup.selectAll('path')
               .filter(d => d.target === node.id)
               .style('opacity', 1)
               .attr('stroke-opacity', 1)
               .attr('stroke-width', d => widthScale(Math.abs(d.weight)) * 2)
-              .attr('stroke', d => {
-                // Use more saturated colors for highlighted edges
-                if (d.weight > 0) return '#1e7ce8'; // Brighter blue
-                if (d.weight < 0) return '#ff1744'; // Brighter red
-                return '#999';
-              })
               .each(d => connectedNodes.add(d.source));
             
-            // Highlight outgoing links with full color
+            // Highlight outgoing links with full opacity
             linkGroup.selectAll('path')
               .filter(d => d.source === node.id)
               .style('opacity', 1)
               .attr('stroke-opacity', 1)
               .attr('stroke-width', d => widthScale(Math.abs(d.weight)) * 2)
-              .attr('stroke', d => {
-                // Use more saturated colors for highlighted edges
-                if (d.weight > 0) return '#1e7ce8'; // Brighter blue
-                if (d.weight < 0) return '#ff1744'; // Brighter red
-                return '#999';
-              })
               .each(d => connectedNodes.add(d.target));
             
             // Highlight connected nodes
@@ -402,8 +390,7 @@ const NetworkVisualization = ({
             linkGroup.selectAll('path')
               .style('opacity', 1)
               .attr('stroke-opacity', 0.6)
-              .attr('stroke-width', d => widthScale(Math.abs(d.weight)))
-              .attr('stroke', d => colorScale(d.weight));
+              .attr('stroke-width', d => widthScale(Math.abs(d.weight)));
           });
       });
     } else {
@@ -435,18 +422,12 @@ const NetworkVisualization = ({
           // Find and highlight connected links and nodes
           const connectedNodes = new Set();
           
-          // Highlight connected links with full color
+          // Highlight connected links with full opacity
           linkGroup.selectAll('path')
             .filter(link => link.source === d.id || link.target === d.id)
             .style('opacity', 1)
             .attr('stroke-opacity', 1)
             .attr('stroke-width', link => widthScale(Math.abs(link.weight)) * 2)
-            .attr('stroke', link => {
-              // Use more saturated colors for highlighted edges
-              if (link.weight > 0) return '#1e7ce8'; // Brighter blue
-              if (link.weight < 0) return '#ff1744'; // Brighter red
-              return '#999';
-            })
             .each(link => {
               if (link.source === d.id) connectedNodes.add(link.target);
               if (link.target === d.id) connectedNodes.add(link.source);
@@ -467,8 +448,7 @@ const NetworkVisualization = ({
           linkGroup.selectAll('path')
             .style('opacity', 1)
             .attr('stroke-opacity', 0.6)
-            .attr('stroke-width', d => widthScale(Math.abs(d.weight)))
-            .attr('stroke', d => colorScale(d.weight));
+            .attr('stroke-width', d => widthScale(Math.abs(d.weight)));
         });
     }
 
