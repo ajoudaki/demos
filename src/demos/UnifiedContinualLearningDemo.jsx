@@ -20,7 +20,7 @@ const UnifiedContinualLearningDemo = () => {
   
   // Network architecture
   const [hiddenLayers, setHiddenLayers] = useState([4, 4]);
-  const [hoveredNode, setHoveredNode] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null);
   const [heatmapResolution, setHeatmapResolution] = useState(15);
   
   // Data generation settings
@@ -691,36 +691,65 @@ const UnifiedContinualLearningDemo = () => {
               minWidth: 0
             }}>
               <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Network Architecture</h4>
-              <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+              <div 
+                style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}
+                onClick={(e) => {
+                  // Close popup when clicking on the background
+                  if (e.target === e.currentTarget || e.target.tagName === 'svg') {
+                    setSelectedNode(null);
+                  }
+                }}
+              >
                 <NetworkVisualization
                   network={network}
                   showWeights={true}
                   showActivationHeatmaps={showActivationHeatmaps}
                   heatmapResolution={heatmapResolution}
                   dynamicSize={true}
-                  onNodeHover={setHoveredNode}
+                  onNodeClick={setSelectedNode}
                 />
                 
-                {/* Hover Decision Boundary Popup */}
-                {hoveredNode && (
+                {/* Click-based Decision Boundary Popup */}
+                {selectedNode && (
                   <div 
                     style={{
                       position: 'absolute',
-                      top: hoveredNode.y > 200 ? hoveredNode.y - 320 : hoveredNode.y + 40,
-                      left: hoveredNode.x > 400 ? hoveredNode.x - 320 : hoveredNode.x + 40,
+                      top: selectedNode.y > 200 ? selectedNode.y - 320 : selectedNode.y + 40,
+                      left: selectedNode.x > 400 ? selectedNode.x - 320 : selectedNode.x + 40,
                       backgroundColor: 'white',
                       border: '2px solid #333',
                       borderRadius: '8px',
                       padding: '10px',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                       zIndex: 1000
-                    }}
-                    onMouseLeave={() => setHoveredNode(null)}>
-                    <h5 style={{ margin: '0 0 5px 0', fontSize: '12px' }}>Decision Boundary</h5>
+                    }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '5px'
+                    }}>
+                      <h5 style={{ margin: 0, fontSize: '12px' }}>
+                        Decision Boundary (Layer {selectedNode.layerIndex}, Neuron {selectedNode.neuronIndex + 1})
+                      </h5>
+                      <button 
+                        onClick={() => setSelectedNode(null)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          fontSize: '16px',
+                          cursor: 'pointer',
+                          padding: '0 5px',
+                          color: '#666'
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
                     <ActivationHeatmap
                       network={network}
-                      layerIndex={hoveredNode.layerIndex}
-                      neuronIndex={hoveredNode.neuronIndex}
+                      layerIndex={selectedNode.layerIndex}
+                      neuronIndex={selectedNode.neuronIndex}
                       resolution={40}
                       width={300}
                       height={300}

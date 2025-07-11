@@ -11,7 +11,7 @@ const NetworkVisualization = ({
   heatmapResolution = 10,
   inputBounds = [-6, 6],
   dynamicSize = false,
-  onNodeHover = null
+  onNodeClick = null
 }) => {
   const svgRef = useRef(null);
   const containerRef = useRef(null);
@@ -298,7 +298,7 @@ const NetworkVisualization = ({
           .attr('stroke-width', 2)
           .style('cursor', 'pointer');
           
-        // Add invisible larger rect for better hover detection
+        // Add invisible larger rect for better click detection
         nodeGroup.append('rect')
           .attr('x', node.x - nodeSize/2 - 5)
           .attr('y', node.y - nodeSize/2 - 5)
@@ -306,21 +306,21 @@ const NetworkVisualization = ({
           .attr('height', nodeSize + 10)
           .attr('fill', 'transparent')
           .style('cursor', 'pointer')
-          .on('mouseover', function(event) {
-            if (onNodeHover) {
-              onNodeHover({
+          .on('click', function(event) {
+            event.stopPropagation();
+            if (onNodeClick) {
+              onNodeClick({
                 layerIndex: node.layerIndex,
                 neuronIndex: node.neuronIndex,
                 x: node.x,
                 y: node.y
               });
             }
+          })
+          .on('mouseenter', function() {
             rect.attr('stroke-width', 3).attr('stroke', '#0066cc');
           })
-          .on('mouseout', function() {
-            if (onNodeHover) {
-              onNodeHover(null);
-            }
+          .on('mouseleave', function() {
             rect.attr('stroke-width', 2).attr('stroke', '#333');
           });
       });
@@ -415,7 +415,7 @@ const NetworkVisualization = ({
       };
     }
 
-  }, [network, width, height, showWeights, highlightPath, showActivationHeatmaps, heatmapResolution, inputBounds, dynamicSize, onNodeHover, dimensions]);
+  }, [network, width, height, showWeights, highlightPath, showActivationHeatmaps, heatmapResolution, inputBounds, dynamicSize, onNodeClick, dimensions]);
 
   // Add resize observer for dynamic sizing
   useEffect(() => {
