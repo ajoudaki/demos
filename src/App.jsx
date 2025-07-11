@@ -14,6 +14,7 @@ import ContinualLearningFeatureDemo from './demos/ContinualLearningFeatureDemo'
 import ModelHistoryDemo from './demos/ModelHistoryDemo'
 import MainDemo from './demos/MainDemo'
 import TestNetworkVisualizationWithHeatmaps from './demos/TestNetworkVisualizationWithHeatmaps'
+import UnifiedContinualLearningDemo from './demos/UnifiedContinualLearningDemo'
 
 const routes = [
   { path: '/', name: 'Home', component: MainDemo },
@@ -26,10 +27,7 @@ const routes = [
   { path: '/test-heatmap', name: 'Test Heatmap', component: TestHeatmapVisualization },
   { path: '/test-activation-heatmap', name: 'Test Activation Heatmap', component: TestActivationHeatmap },
   { path: '/test-training-controls', name: 'Test Training Controls', component: TestTrainingControls },
-  { path: '/integrated-training', name: 'Integrated Training Demo', component: IntegratedTrainingDemo },
-  { path: '/integrated-training-simple', name: 'Integrated Training (Simple)', component: IntegratedTrainingDemoSimple },
-  { path: '/continual-learning', name: 'Continual Learning', component: ContinualLearningFeatureDemo },
-  { path: '/model-history', name: 'Model History', component: ModelHistoryDemo },
+  { path: '/continual-learning', name: 'Continual Learning', component: UnifiedContinualLearningDemo },
 ];
 
 function AppContent() {

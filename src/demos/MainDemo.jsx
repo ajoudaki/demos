@@ -11,22 +11,17 @@ const MainDemo = () => {
       features: ["Complete original functionality", "All visualizations", "Model history"]
     },
     {
-      title: "Integrated Training",
-      path: "integrated-training",
-      description: "Live neural network training with real-time visualizations",
-      features: ["Real-time weight updates", "Loss curves", "Neuron activation heatmaps", "Multiple datasets"]
-    },
-    {
       title: "Continual Learning",
       path: "continual-learning",
-      description: "Train on different tasks sequentially",
-      features: ["Dataset switching", "Task markers", "Catastrophic forgetting demo"]
-    },
-    {
-      title: "Model History",
-      path: "model-history",
-      description: "Save and navigate through training snapshots",
-      features: ["Timeline navigation", "Snapshot intervals", "State preservation"]
+      description: "Comprehensive neural network training with task switching and model history",
+      features: [
+        "Live training with real-time visualizations",
+        "Task switching to demonstrate catastrophic forgetting",
+        "Model history with timeline navigation",
+        "Activation heatmaps on neurons",
+        "Multiple datasets (XOR, Spiral, Circle, Ring, Gaussian)",
+        "Manual and automatic snapshots"
+      ]
     }
   ];
 
