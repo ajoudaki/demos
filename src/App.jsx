@@ -7,6 +7,8 @@ import TestLossChart from './demos/TestLossChart'
 import TestHeatmapVisualization from './demos/TestHeatmapVisualization'
 import TestActivationHeatmap from './demos/TestActivationHeatmap'
 import TestTrainingControls from './demos/TestTrainingControls'
+import IntegratedTrainingDemo from './demos/IntegratedTrainingDemo'
+import IntegratedTrainingDemoSimple from './demos/IntegratedTrainingDemoSimple'
 
 function App() {
   const [currentView, setCurrentView] = useState('demo');
@@ -43,6 +45,8 @@ function App() {
           <option value="test-heatmap">Test Heatmap</option>
           <option value="test-activation-heatmap">Test Activation Heatmap</option>
           <option value="test-training-controls">Test Training Controls</option>
+          <option value="integrated-training">Integrated Training Demo</option>
+          <option value="integrated-training-simple">Integrated Training (Simple)</option>
         </select>
       </div>
       
@@ -54,6 +58,8 @@ function App() {
       {currentView === 'test-heatmap' && <TestHeatmapVisualization />}
       {currentView === 'test-activation-heatmap' && <TestActivationHeatmap />}
       {currentView === 'test-training-controls' && <TestTrainingControls />}
+      {currentView === 'integrated-training' && <IntegratedTrainingDemo />}
+      {currentView === 'integrated-training-simple' && <IntegratedTrainingDemoSimple />}
     </div>
   )
 }
