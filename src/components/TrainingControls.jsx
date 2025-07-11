@@ -18,35 +18,29 @@ const TrainingControls = ({
   testLoss = null
 }) => {
   return (
-    <div style={{
-      backgroundColor: '#f8f9fa',
-      padding: '15px',
-      borderRadius: '8px',
-      border: '1px solid #dee2e6'
-    }}>
+    <div>
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '15px',
-        marginBottom: '15px'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+        gap: '10px'
       }}>
         {/* Training Actions */}
         <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
-            Training Control
+          <label style={{ display: 'block', marginBottom: '3px', fontSize: '12px', fontWeight: 'bold' }}>
+            Training
           </label>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '5px' }}>
             <button
               onClick={onStart}
               disabled={isTraining}
               style={{
-                padding: '8px 16px',
+                padding: '5px 12px',
                 backgroundColor: isTraining ? '#6c757d' : '#28a745',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: isTraining ? 'not-allowed' : 'pointer',
-                fontSize: '14px'
+                fontSize: '12px'
               }}
             >
               {isTraining ? 'Training...' : 'Start'}
@@ -56,13 +50,13 @@ const TrainingControls = ({
               onClick={onStop}
               disabled={!isTraining}
               style={{
-                padding: '8px 16px',
+                padding: '5px 12px',
                 backgroundColor: !isTraining ? '#6c757d' : '#dc3545',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: !isTraining ? 'not-allowed' : 'pointer',
-                fontSize: '14px'
+                fontSize: '12px'
               }}
             >
               Stop
@@ -72,13 +66,13 @@ const TrainingControls = ({
               onClick={onReset}
               disabled={isTraining}
               style={{
-                padding: '8px 16px',
+                padding: '5px 12px',
                 backgroundColor: isTraining ? '#6c757d' : '#ffc107',
                 color: isTraining ? 'white' : '#212529',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: isTraining ? 'not-allowed' : 'pointer',
-                fontSize: '14px'
+                fontSize: '12px'
               }}
             >
               Reset
@@ -88,8 +82,8 @@ const TrainingControls = ({
 
         {/* Learning Rate */}
         <div>
-          <label htmlFor="learning-rate" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
-            Learning Rate: {learningRate}
+          <label htmlFor="learning-rate" style={{ display: 'block', marginBottom: '3px', fontSize: '12px', fontWeight: 'bold' }}>
+            LR: {learningRate.toFixed(3)}
           </label>
           <input
             id="learning-rate"
@@ -110,8 +104,8 @@ const TrainingControls = ({
 
         {/* Activation Type */}
         <div>
-          <label htmlFor="activation-type" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
-            Activation Function
+          <label htmlFor="activation-type" style={{ display: 'block', marginBottom: '3px', fontSize: '12px', fontWeight: 'bold' }}>
+            Activation
           </label>
           <select
             id="activation-type"
@@ -120,8 +114,8 @@ const TrainingControls = ({
             disabled={isTraining}
             style={{
               width: '100%',
-              padding: '6px',
-              fontSize: '14px',
+              padding: '3px',
+              fontSize: '12px',
               borderRadius: '4px',
               border: '1px solid #ced4da'
             }}
@@ -136,8 +130,8 @@ const TrainingControls = ({
         {/* Batch Size */}
         {onBatchSizeChange && (
           <div>
-            <label htmlFor="batch-size" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
-              Batch Size: {batchSize}
+            <label htmlFor="batch-size" style={{ display: 'block', marginBottom: '3px', fontSize: '12px', fontWeight: 'bold' }}>
+              Batch: {batchSize}
             </label>
             <input
               id="batch-size"
@@ -160,8 +154,8 @@ const TrainingControls = ({
         {/* Epochs Per Step */}
         {onEpochsPerStepChange && (
           <div>
-            <label htmlFor="epochs-per-step" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
-              Epochs per Step: {epochsPerStep}
+            <label htmlFor="epochs-per-step" style={{ display: 'block', marginBottom: '3px', fontSize: '12px', fontWeight: 'bold' }}>
+              Epochs/Step: {epochsPerStep}
             </label>
             <input
               id="epochs-per-step"
@@ -185,23 +179,24 @@ const TrainingControls = ({
       {/* Status Display */}
       <div style={{
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingTop: '10px',
+        gap: '15px',
+        marginTop: '8px',
+        paddingTop: '8px',
         borderTop: '1px solid #dee2e6',
-        fontSize: '14px'
+        fontSize: '11px',
+        color: '#666'
       }}>
         <div>
           <strong>Epoch:</strong> {currentEpoch}
         </div>
         {trainLoss !== null && (
           <div>
-            <strong>Train Loss:</strong> {trainLoss.toFixed(4)}
+            <strong>Train:</strong> {trainLoss.toFixed(3)}
           </div>
         )}
         {testLoss !== null && (
           <div>
-            <strong>Test Loss:</strong> {testLoss.toFixed(4)}
+            <strong>Test:</strong> {testLoss.toFixed(3)}
           </div>
         )}
       </div>

@@ -5,6 +5,13 @@ const ModelTimeline = ({
   currentIndex = 0,
   onSelectSnapshot,
   onClearHistory,
+  autoSnapshot = true,
+  snapshotInterval = 50,
+  onAutoSnapshotChange,
+  onSnapshotIntervalChange,
+  onSaveSnapshot,
+  network = null,
+  isTraining = false,
   width = 800,
   height = 80
 }) => {
@@ -36,41 +43,81 @@ const ModelTimeline = ({
 
   return (
     <div style={{
-      backgroundColor: '#f5f5f5',
-      padding: '15px',
+      backgroundColor: '#f0f8ff',
+      padding: '12px',
       borderRadius: '8px',
-      border: '1px solid #ddd'
+      border: '1px solid #b0d4ff'
     }}>
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '10px'
+        marginBottom: '8px',
+        flexWrap: 'wrap',
+        gap: '10px'
       }}>
-        <h4 style={{ margin: 0 }}>Model History Timeline</h4>
-        <button
-          onClick={onClearHistory}
-          style={{
-            padding: '4px 12px',
-            fontSize: '12px',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Clear History
-        </button>
+        <h4 style={{ margin: 0, fontSize: '16px' }}>Model History</h4>
+        
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
+            <input
+              type="checkbox"
+              checked={autoSnapshot}
+              onChange={(e) => onAutoSnapshotChange && onAutoSnapshotChange(e.target.checked)}
+            />
+            Auto-snapshot every
+            <input
+              type="number"
+              value={snapshotInterval}
+              onChange={(e) => onSnapshotIntervalChange && onSnapshotIntervalChange(Math.max(1, parseInt(e.target.value) || 50))}
+              min="1"
+              max="200"
+              style={{ width: '50px' }}
+              disabled={!autoSnapshot}
+            />
+            epochs
+          </label>
+
+          <button
+            onClick={() => onSaveSnapshot && onSaveSnapshot()}
+            disabled={isTraining || !network}
+            style={{
+              padding: '4px 10px',
+              fontSize: '12px',
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: isTraining || !network ? 'not-allowed' : 'pointer'
+            }}
+          >
+            Save Snapshot
+          </button>
+          
+          <button
+            onClick={onClearHistory}
+            style={{
+              padding: '4px 10px',
+              fontSize: '12px',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Clear
+          </button>
+        </div>
       </div>
 
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '15px'
+        gap: '10px'
       }}>
-        <span style={{ fontSize: '14px', minWidth: '80px' }}>
-          Epoch {snapshots[0]?.epoch || 0}
+        <span style={{ fontSize: '12px', minWidth: '45px' }}>
+          E{snapshots[0]?.epoch || 0}
         </span>
         
         <div style={{ flex: 1, position: 'relative' }}>
@@ -111,37 +158,29 @@ const ModelTimeline = ({
           </div>
         </div>
         
-        <span style={{ fontSize: '14px', minWidth: '80px', textAlign: 'right' }}>
-          Epoch {snapshots[snapshots.length - 1]?.epoch || 0}
+        <span style={{ fontSize: '12px', minWidth: '45px', textAlign: 'right' }}>
+          E{snapshots[snapshots.length - 1]?.epoch || 0}
         </span>
       </div>
 
       <div style={{
-        marginTop: '10px',
+        marginTop: '8px',
         display: 'flex',
         justifyContent: 'space-between',
-        fontSize: '13px',
+        fontSize: '12px',
         color: '#666'
       }}>
         <div>
-          <strong>Current:</strong> Epoch {currentSnapshot?.epoch || 0}
-          {currentSnapshot?.dataset && ` | Dataset: ${currentSnapshot.dataset}`}
+          <strong>Current:</strong> E{currentSnapshot?.epoch || 0}
+          {currentSnapshot?.dataset && ` | ${currentSnapshot.dataset}`}
         </div>
         <div>
-          <strong>Loss:</strong> Train: {currentSnapshot?.trainLoss?.toFixed(4) || 'N/A'} | 
-          Test: {currentSnapshot?.testLoss?.toFixed(4) || 'N/A'}
+          <strong>Loss:</strong> {currentSnapshot?.trainLoss?.toFixed(3) || 'N/A'} / {currentSnapshot?.testLoss?.toFixed(3) || 'N/A'}
         </div>
-      </div>
-
-
-      <div style={{
-        marginTop: '10px',
-        fontSize: '12px',
-        color: '#666',
-        textAlign: 'center'
-      }}>
-        {snapshots.length} snapshots saved
-        {snapshots.some(s => s.isTaskSwitch) && ' | Task switches marked with ●'}
+        <div>
+          {snapshots.length} saved
+          {snapshots.some(s => s.isTaskSwitch) && ' (● = switch)'}
+        </div>
       </div>
     </div>
   );

@@ -79,9 +79,9 @@ const UnifiedContinualLearningDemo = () => {
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const width = 300;
-    const height = 300;
-    const margin = 30;
+    const width = 220;
+    const height = 220;
+    const margin = 20;
 
     const xScale = d3.scaleLinear()
       .domain([-6, 6])
@@ -119,11 +119,11 @@ const UnifiedContinualLearningDemo = () => {
     // Add title with current task
     svg.append('text')
       .attr('x', width / 2)
-      .attr('y', 15)
+      .attr('y', 12)
       .attr('text-anchor', 'middle')
-      .style('font-size', '14px')
+      .style('font-size', '12px')
       .style('font-weight', 'bold')
-      .text(`Current Task: ${dataType.toUpperCase()}`);
+      .text(`Task: ${dataType.toUpperCase()}`);
 
   }, [network, dataType]);
 
@@ -336,218 +336,200 @@ const UnifiedContinualLearningDemo = () => {
   }, []);
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Unified Continual Learning Demo</h2>
-      <p>A comprehensive demo combining integrated training, continual learning, and model history features.</p>
+    <div style={{ padding: '20px', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <h2 style={{ margin: '0 0 10px 0' }}>Unified Continual Learning Demo</h2>
 
-      {/* Status Bar */}
+      {/* Control Panel - All controls in one flexible block */}
       <div style={{
-        marginBottom: '20px',
-        padding: '10px',
-        backgroundColor: isViewingHistory ? '#fff3cd' : '#d4edda',
-        borderRadius: '8px',
-        border: isViewingHistory ? '1px solid #ffeaa7' : '1px solid #c3e6cb',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <div>
-          <strong>Status:</strong> {isViewingHistory ? `Viewing History (Epoch ${snapshots[currentSnapshotIndex]?.epoch || 0})` : (isTraining ? 'Training...' : 'Ready')}
-          {' | '}
-          <strong>Current Task:</strong> {dataType.toUpperCase()}
-          {' | '}
-          <strong>Epoch:</strong> {network?.currentEpoch || 0}
-        </div>
-        <div>
-          <strong>Snapshots:</strong> {snapshots.length}
-        </div>
-      </div>
-
-      {/* Training Controls */}
-      <div style={{
-        backgroundColor: '#f5f5f5',
-        padding: '20px',
-        borderRadius: '8px',
-        marginBottom: '20px'
-      }}>
-        <TrainingControls
-          isTraining={isTraining}
-          onStart={handleStart}
-          onStop={handleStop}
-          onReset={handleReset}
-          learningRate={learningRate}
-          onLearningRateChange={handleLearningRateChange}
-          activationType={activationType}
-          onActivationTypeChange={handleActivationTypeChange}
-          batchSize={batchSize}
-          onBatchSizeChange={setBatchSize}
-          currentEpoch={network?.currentEpoch || 0}
-          trainLoss={network?.trainingLoss[network.trainingLoss.length - 1] || null}
-          testLoss={network?.testLoss[network.testLoss.length - 1] || null}
-        />
-
-        {/* Additional Controls */}
-        <div style={{ marginTop: '15px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            Epochs per step:
-            <input
-              type="number"
-              value={epochsPerStep}
-              onChange={(e) => setEpochsPerStep(Math.max(1, parseInt(e.target.value) || 1))}
-              min="1"
-              max="10"
-              style={{ width: '60px' }}
-            />
-          </label>
-
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            Training samples:
-            <input
-              type="number"
-              value={trainingSamples}
-              onChange={(e) => handleTrainingSamplesChange(Math.max(10, parseInt(e.target.value) || 100))}
-              min="10"
-              max="500"
-              step="10"
-              style={{ width: '80px' }}
-              disabled={isTraining}
-            />
-          </label>
-
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <input
-              type="checkbox"
-              checked={showActivationHeatmaps}
-              onChange={(e) => setShowActivationHeatmaps(e.target.checked)}
-            />
-            Show activation heatmaps
-          </label>
-        </div>
-      </div>
-
-      {/* Continual Learning Controls */}
-      <div style={{
-        backgroundColor: '#e8f4f8',
+        backgroundColor: '#f8f9fa',
         padding: '15px',
         borderRadius: '8px',
-        marginBottom: '20px',
-        border: '1px solid #b8e0ea'
+        border: '1px solid #dee2e6',
+        marginBottom: '15px',
+        flexShrink: 0
       }}>
-        <h3 style={{ marginTop: 0 }}>Task Switching</h3>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {tasks.map((task, index) => (
-            <button
-              key={task}
-              onClick={() => handleTaskSwitch(task)}
-              disabled={isTraining || dataType === task}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: dataType === task ? '#007bff' : '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isTraining || dataType === task ? 'not-allowed' : 'pointer',
-                opacity: isTraining ? 0.5 : 1
-              }}
-            >
-              {task.toUpperCase()}
-            </button>
-          ))}
-        </div>
-        
-        {taskHistory.length > 1 && (
-          <div style={{ marginTop: '10px', fontSize: '13px', color: '#666' }}>
-            <strong>Task History:</strong> {taskHistory.map((t, i) => 
-              `${t.task} (epoch ${t.startEpoch})`
-            ).join(' → ')}
+
+        {/* Status Row */}
+        <div style={{
+          padding: '8px 12px',
+          backgroundColor: isViewingHistory ? '#fff3cd' : '#d4edda',
+          borderRadius: '6px',
+          border: isViewingHistory ? '1px solid #ffeaa7' : '1px solid #c3e6cb',
+          marginBottom: '12px',
+          fontSize: '13px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div>
+            <strong>Status:</strong> {isViewingHistory ? `Viewing History (E${snapshots[currentSnapshotIndex]?.epoch || 0})` : (isTraining ? 'Training...' : 'Ready')}
+            {' | '}
+            <strong>Task:</strong> {dataType.toUpperCase()}
+            {' | '}
+            <strong>Epoch:</strong> {network?.currentEpoch || 0}
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Model History Controls */}
-      <div style={{
-        backgroundColor: '#f0f8ff',
-        padding: '15px',
-        borderRadius: '8px',
-        marginBottom: '20px',
-        border: '1px solid #b0d4ff'
-      }}>
-        <h3 style={{ marginTop: 0 }}>Model History</h3>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <input
-              type="checkbox"
-              checked={autoSnapshot}
-              onChange={(e) => setAutoSnapshot(e.target.checked)}
+        {/* Flexible Controls Grid */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
+          {/* Training Controls Section */}
+          <div style={{ flex: '1 1 300px', minWidth: 0 }}>
+            <TrainingControls
+              isTraining={isTraining}
+              onStart={handleStart}
+              onStop={handleStop}
+              onReset={handleReset}
+              learningRate={learningRate}
+              onLearningRateChange={handleLearningRateChange}
+              activationType={activationType}
+              onActivationTypeChange={handleActivationTypeChange}
+              batchSize={batchSize}
+              onBatchSizeChange={setBatchSize}
+              currentEpoch={network?.currentEpoch || 0}
+              trainLoss={network?.trainingLoss[network.trainingLoss.length - 1] || null}
+              testLoss={network?.testLoss[network.testLoss.length - 1] || null}
             />
-            Auto-snapshot every
-            <input
-              type="number"
-              value={snapshotInterval}
-              onChange={(e) => setSnapshotInterval(Math.max(1, parseInt(e.target.value) || 50))}
-              min="1"
-              max="200"
-              style={{ width: '60px' }}
-              disabled={!autoSnapshot}
-            />
-            epochs
-          </label>
+          </div>
 
-          <button
-            onClick={() => network && saveSnapshot(network, true)}
-            disabled={isTraining || !network}
-            style={{
-              padding: '6px 12px',
-              backgroundColor: '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: isTraining || !network ? 'not-allowed' : 'pointer'
-            }}
-          >
-            Save Snapshot
-          </button>
+          {/* Task Switching Section */}
+          <div style={{ 
+            flex: '1 1 200px',
+            backgroundColor: '#e8f4f8',
+            padding: '12px',
+            borderRadius: '6px',
+            border: '1px solid #b8e0ea'
+          }}>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Task Switching</h4>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {tasks.map((task) => (
+                <button
+                  key={task}
+                  onClick={() => handleTaskSwitch(task)}
+                  disabled={isTraining || dataType === task}
+                  style={{
+                    padding: '4px 10px',
+                    fontSize: '12px',
+                    backgroundColor: dataType === task ? '#007bff' : '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: isTraining || dataType === task ? 'not-allowed' : 'pointer',
+                    opacity: isTraining ? 0.5 : 1
+                  }}
+                >
+                  {task.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            {taskHistory.length > 1 && (
+              <div style={{ marginTop: '8px', fontSize: '11px', color: '#666' }}>
+                <strong>History:</strong> {taskHistory.map((t) => 
+                  `${t.task}(E${t.startEpoch})`
+                ).join(' → ')}
+              </div>
+            )}
+          </div>
+
+          {/* Additional Settings */}
+          <div style={{ 
+            flex: '1 1 250px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '10px',
+            alignItems: 'flex-start',
+            alignContent: 'flex-start'
+          }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
+              Epochs/step:
+              <input
+                type="number"
+                value={epochsPerStep}
+                onChange={(e) => setEpochsPerStep(Math.max(1, parseInt(e.target.value) || 1))}
+                min="1"
+                max="10"
+                style={{ width: '50px' }}
+              />
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
+              Samples:
+              <input
+                type="number"
+                value={trainingSamples}
+                onChange={(e) => handleTrainingSamplesChange(Math.max(10, parseInt(e.target.value) || 100))}
+                min="10"
+                max="500"
+                step="10"
+                style={{ width: '60px' }}
+                disabled={isTraining}
+              />
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
+              <input
+                type="checkbox"
+                checked={showActivationHeatmaps}
+                onChange={(e) => setShowActivationHeatmaps(e.target.checked)}
+              />
+              Show heatmaps
+            </label>
+          </div>
         </div>
       </div>
 
       {/* Model Timeline */}
-      {snapshots.length > 0 && (
-        <ModelTimeline
-          snapshots={snapshots}
-          currentIndex={currentSnapshotIndex}
-          onSelectSnapshot={handleSelectSnapshot}
-          onClearHistory={handleClearHistory}
-        />
-      )}
+      <ModelTimeline
+        snapshots={snapshots}
+        currentIndex={currentSnapshotIndex}
+        onSelectSnapshot={handleSelectSnapshot}
+        onClearHistory={handleClearHistory}
+        autoSnapshot={autoSnapshot}
+        snapshotInterval={snapshotInterval}
+        onAutoSnapshotChange={setAutoSnapshot}
+        onSnapshotIntervalChange={setSnapshotInterval}
+        onSaveSnapshot={() => network && saveSnapshot(network, true)}
+        network={network}
+        isTraining={isTraining}
+      />
 
       {network && (
-        <>
-          {/* Main Visualizations */}
+        <div style={{ 
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '15px',
+          minHeight: 0
+        }}>
+          {/* Main Visualizations Row */}
           <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: '300px 1fr',
-            gap: '20px',
-            marginTop: '20px'
+            flex: 1,
+            display: 'flex',
+            gap: '15px',
+            minHeight: 0
           }}>
-            {/* Dataset Visualization */}
+            {/* Left: Training Data */}
             <div style={{ 
+              width: '250px',
               backgroundColor: '#f5f5f5',
-              padding: '20px',
-              borderRadius: '8px'
+              padding: '15px',
+              borderRadius: '8px',
+              display: 'flex',
+              flexDirection: 'column'
             }}>
-              <h3>Training Data</h3>
-              <svg ref={svgRef} width={300} height={300} />
+              <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Training Data</h4>
+              <svg ref={svgRef} width={220} height={220} style={{ alignSelf: 'center' }} />
               
-              <div style={{ marginTop: '10px' }}>
-                <label>
+              <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
+                <label style={{ fontSize: '12px' }}>
                   Dataset:
                   <select
                     value={dataType}
                     onChange={(e) => handleDataTypeChange(e.target.value)}
                     disabled={isTraining}
                     style={{
-                      marginLeft: '10px',
-                      padding: '4px 8px',
+                      marginLeft: '5px',
+                      padding: '2px 5px',
+                      fontSize: '12px',
                       borderRadius: '4px',
                       border: '1px solid #ccc'
                     }}
@@ -560,70 +542,86 @@ const UnifiedContinualLearningDemo = () => {
               </div>
             </div>
 
-            {/* Network Architecture */}
+            {/* Center: Network Architecture (takes remaining space) */}
             <div style={{ 
+              flex: 1,
               backgroundColor: '#f5f5f5',
-              padding: '20px',
-              borderRadius: '8px'
+              padding: '15px',
+              borderRadius: '8px',
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: 0
             }}>
-              <h3>Network Architecture</h3>
-              <NetworkVisualization
-                network={network}
-                width={500}
-                height={300}
-                showWeights={true}
-                showActivationHeatmaps={showActivationHeatmaps}
-                heatmapResolution={15}
-              />
-            </div>
-          </div>
-
-          {/* Loss Chart */}
-          <div style={{ 
-            backgroundColor: '#f5f5f5',
-            padding: '20px',
-            borderRadius: '8px',
-            marginTop: '20px'
-          }}>
-            <h3>Training Progress</h3>
-            <LossChart
-              trainLoss={network.trainingLoss}
-              testLoss={network.testLoss}
-              width={800}
-              height={250}
-              maxPoints={200}
-            />
-            {taskSwitchPoints.length > 0 && (
-              <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-                Task switches at epochs: {taskSwitchPoints.join(', ')}
+              <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Network Architecture</h4>
+              <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <NetworkVisualization
+                  network={network}
+                  width={600}
+                  height={400}
+                  showWeights={true}
+                  showActivationHeatmaps={showActivationHeatmaps}
+                  heatmapResolution={15}
+                />
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Decision Boundary */}
-          <div style={{ 
-            backgroundColor: '#f5f5f5',
-            padding: '20px',
-            borderRadius: '8px',
-            marginTop: '20px'
-          }}>
-            <h3>Decision Boundary</h3>
-            <div style={{ textAlign: 'center' }}>
-              <ActivationHeatmap
-                network={network}
-                layerIndex={3}
-                neuronIndex={0}
-                resolution={40}
-                width={400}
-                height={400}
-                inputBounds={[-6, 6]}
-                colorScheme="redblue"
-                showAxes={true}
-                title=""
-              />
+            {/* Right Column: Decision Boundary + Loss Chart */}
+            <div style={{
+              width: '350px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px'
+            }}>
+              {/* Decision Boundary */}
+              <div style={{ 
+                flex: '1',
+                backgroundColor: '#f5f5f5',
+                padding: '15px',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Decision Boundary</h4>
+                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <ActivationHeatmap
+                    network={network}
+                    layerIndex={3}
+                    neuronIndex={0}
+                    resolution={30}
+                    width={280}
+                    height={280}
+                    inputBounds={[-6, 6]}
+                    colorScheme="redblue"
+                    showAxes={true}
+                    title=""
+                  />
+                </div>
+              </div>
+
+              {/* Loss Chart */}
+              <div style={{ 
+                height: '180px',
+                backgroundColor: '#f5f5f5',
+                padding: '15px',
+                borderRadius: '8px'
+              }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Training Progress</h4>
+                <LossChart
+                  trainLoss={network.trainingLoss}
+                  testLoss={network.testLoss}
+                  width={320}
+                  height={120}
+                  maxPoints={150}
+                />
+                {taskSwitchPoints.length > 0 && (
+                  <div style={{ marginTop: '5px', fontSize: '10px', color: '#666' }}>
+                    Switches: {taskSwitchPoints.map(e => `E${e}`).join(', ')}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

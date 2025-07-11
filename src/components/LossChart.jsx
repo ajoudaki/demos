@@ -17,7 +17,7 @@ const LossChart = ({
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const margin = { top: 20, right: 60, bottom: 40, left: 50 };
+    const margin = { top: 10, right: 50, bottom: 25, left: 40 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
@@ -52,10 +52,10 @@ const LossChart = ({
       .call(d3.axisBottom(xScale).ticks(5))
       .append('text')
       .attr('x', innerWidth / 2)
-      .attr('y', 35)
+      .attr('y', 20)
       .attr('fill', 'black')
       .style('text-anchor', 'middle')
-      .style('font-size', '12px')
+      .style('font-size', '10px')
       .text('Epoch');
 
     g.append('g')
@@ -63,10 +63,10 @@ const LossChart = ({
       .append('text')
       .attr('transform', 'rotate(-90)')
       .attr('x', -innerHeight / 2)
-      .attr('y', -35)
+      .attr('y', -25)
       .attr('fill', 'black')
       .style('text-anchor', 'middle')
-      .style('font-size', '12px')
+      .style('font-size', '10px')
       .text('Loss');
 
     // Line generators
@@ -117,7 +117,7 @@ const LossChart = ({
 
     // Legend
     const legend = g.append('g')
-      .attr('transform', `translate(${innerWidth - 80}, 10)`);
+      .attr('transform', `translate(${innerWidth - 60}, 5)`);
 
     // Train legend
     legend.append('line')
@@ -129,24 +129,24 @@ const LossChart = ({
       .attr('stroke-width', 2);
 
     legend.append('text')
-      .attr('x', 25)
-      .attr('y', 4)
-      .style('font-size', '12px')
+      .attr('x', 22)
+      .attr('y', 3)
+      .style('font-size', '10px')
       .text('Train');
 
     // Test legend
     legend.append('line')
       .attr('x1', 0)
-      .attr('y1', 20)
+      .attr('y1', 15)
       .attr('x2', 20)
-      .attr('y2', 20)
+      .attr('y2', 15)
       .attr('stroke', '#e74c3c')
       .attr('stroke-width', 2);
 
     legend.append('text')
-      .attr('x', 25)
-      .attr('y', 24)
-      .style('font-size', '12px')
+      .attr('x', 22)
+      .attr('y', 18)
+      .style('font-size', '10px')
       .text('Test');
 
     // Add current values
