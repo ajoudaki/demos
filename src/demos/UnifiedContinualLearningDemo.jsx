@@ -34,9 +34,6 @@ const UnifiedContinualLearningDemo = () => {
   const [isViewingHistory, setIsViewingHistory] = useState(false);
   const [autoSnapshot, setAutoSnapshot] = useState(true);
   
-  // Visualization settings
-  const [selectedNeuron, setSelectedNeuron] = useState({ layer: 0, index: 0 });
-  const [selectedHiddenLayer, setSelectedHiddenLayer] = useState(0);
   
   // Refs
   const animationRef = useRef(null);
@@ -131,7 +128,7 @@ const UnifiedContinualLearningDemo = () => {
   }, [network, dataType]);
 
   // Save snapshot function
-  const saveSnapshot = (network, isManual = false) => {
+  const saveSnapshot = (network, isManual = false, isTaskSwitch = false) => {
     const snapshot = {
       network: network.clone(),
       epoch: network.currentEpoch,
@@ -140,7 +137,8 @@ const UnifiedContinualLearningDemo = () => {
       dataset: dataType,
       task: tasks[currentTaskIndex],
       timestamp: Date.now(),
-      isManual
+      isManual,
+      isTaskSwitch
     };
     
     setSnapshots(prev => [...prev, snapshot]);
@@ -194,8 +192,12 @@ const UnifiedContinualLearningDemo = () => {
       saveSnapshot(network);
     }
     
+    // If viewing history at latest snapshot, switch to live mode
+    if (isViewingHistory && currentSnapshotIndex === snapshots.length - 1) {
+      setIsViewingHistory(false);
+    }
+    
     setIsTraining(true);
-    setIsViewingHistory(false);
     animationRef.current = 1;
     trainStep();
   };
@@ -248,8 +250,8 @@ const UnifiedContinualLearningDemo = () => {
     const newTaskIndex = tasks.indexOf(newTask);
     setCurrentTaskIndex(newTaskIndex);
     
-    // Save snapshot at task switch
-    saveSnapshot(network, true);
+    // Save snapshot at task switch with task switch flag
+    saveSnapshot(network, true, true);
   };
 
   // Model history navigation
@@ -257,15 +259,22 @@ const UnifiedContinualLearningDemo = () => {
     if (index < 0 || index >= snapshots.length) return;
     
     const snapshot = snapshots[index];
-    setNetwork(snapshot.network.clone());
-    setCurrentSnapshotIndex(index);
-    setIsViewingHistory(true);
+    const clonedNetwork = snapshot.network.clone();
     
-    // Update UI to reflect snapshot state
-    if (snapshot.task) {
-      setDataType(snapshot.task);
-      setCurrentTaskIndex(tasks.indexOf(snapshot.task));
+    // Update dataset to match the snapshot
+    if (snapshot.dataset) {
+      const trainData = generateData(trainingSamples, snapshot.dataset);
+      const testData = generateData(Math.floor(trainingSamples * 0.2), snapshot.dataset);
+      clonedNetwork.setTrainTestData(trainData, testData);
+      
+      setDataType(snapshot.dataset);
+      setCurrentTaskIndex(tasks.indexOf(snapshot.dataset));
     }
+    
+    setNetwork(clonedNetwork);
+    networkRef.current = clonedNetwork;
+    setCurrentSnapshotIndex(index);
+    setIsViewingHistory(index < snapshots.length - 1);
   };
 
   const handleClearHistory = () => {
@@ -591,69 +600,22 @@ const UnifiedContinualLearningDemo = () => {
             )}
           </div>
 
-          {/* Activation Heatmaps */}
+          {/* Decision Boundary */}
           <div style={{ 
             backgroundColor: '#f5f5f5',
             padding: '20px',
             borderRadius: '8px',
             marginTop: '20px'
           }}>
-            <h3>Activation Heatmaps</h3>
-            
-            {/* Layer Selection */}
-            <div style={{ marginBottom: '15px' }}>
-              <label>
-                Select layer:
-                <select
-                  value={selectedHiddenLayer}
-                  onChange={(e) => setSelectedHiddenLayer(parseInt(e.target.value))}
-                  style={{
-                    marginLeft: '10px',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    border: '1px solid #ccc'
-                  }}
-                >
-                  <option value={0}>Hidden Layer 1</option>
-                  <option value={1}>Hidden Layer 2</option>
-                </select>
-              </label>
-            </div>
-
-            {/* Heatmap Grid */}
-            <div style={{ 
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '15px'
-            }}>
-              {[0, 1, 2, 3].map(neuronIndex => (
-                <div key={neuronIndex} style={{ textAlign: 'center' }}>
-                  <ActivationHeatmap
-                    network={network}
-                    layerIndex={selectedHiddenLayer + 1}
-                    neuronIndex={neuronIndex}
-                    resolution={30}
-                    width={150}
-                    height={150}
-                    inputBounds={[-6, 6]}
-                    colorScheme="redblue"
-                    showAxes={false}
-                    title={`Neuron ${neuronIndex + 1}`}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Decision Boundary */}
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
-              <h4>Decision Boundary</h4>
+            <h3>Decision Boundary</h3>
+            <div style={{ textAlign: 'center' }}>
               <ActivationHeatmap
                 network={network}
                 layerIndex={3}
                 neuronIndex={0}
                 resolution={40}
-                width={300}
-                height={300}
+                width={400}
+                height={400}
                 inputBounds={[-6, 6]}
                 colorScheme="redblue"
                 showAxes={true}

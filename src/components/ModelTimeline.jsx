@@ -73,17 +73,43 @@ const ModelTimeline = ({
           Epoch {snapshots[0]?.epoch || 0}
         </span>
         
-        <input
-          type="range"
-          min="0"
-          max={snapshots.length - 1}
-          value={currentIndex}
-          onChange={handleSliderChange}
-          style={{
-            flex: 1,
-            cursor: 'pointer'
-          }}
-        />
+        <div style={{ flex: 1, position: 'relative' }}>
+          <input
+            type="range"
+            min="0"
+            max={snapshots.length - 1}
+            value={currentIndex}
+            onChange={handleSliderChange}
+            style={{
+              width: '100%',
+              cursor: 'pointer'
+            }}
+          />
+          {/* Task switch markers */}
+          <div style={{ position: 'absolute', top: '-8px', left: 0, right: 0, pointerEvents: 'none' }}>
+            {snapshots.map((snapshot, i) => {
+              if (!snapshot.isTaskSwitch) return null;
+              const position = (i / (snapshots.length - 1)) * 100;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    position: 'absolute',
+                    left: `${position}%`,
+                    transform: 'translateX(-50%)',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: '#ff6b6b',
+                    border: '2px solid white',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                  }}
+                  title={`Task switch at epoch ${snapshot.epoch}`}
+                />
+              );
+            })}
+          </div>
+        </div>
         
         <span style={{ fontSize: '14px', minWidth: '80px', textAlign: 'right' }}>
           Epoch {snapshots[snapshots.length - 1]?.epoch || 0}
@@ -107,41 +133,6 @@ const ModelTimeline = ({
         </div>
       </div>
 
-      {/* Timeline markers */}
-      <div style={{
-        position: 'relative',
-        height: '20px',
-        marginTop: '10px',
-        backgroundColor: '#e0e0e0',
-        borderRadius: '10px',
-        overflow: 'hidden'
-      }}>
-        {snapshots.map((snapshot, i) => {
-          const position = (i / (snapshots.length - 1)) * 100;
-          const isSelected = i === currentIndex;
-          
-          return (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                left: `${position}%`,
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: isSelected ? '12px' : '8px',
-                height: isSelected ? '12px' : '8px',
-                borderRadius: '50%',
-                backgroundColor: isSelected ? '#007bff' : '#666',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                zIndex: isSelected ? 2 : 1
-              }}
-              onClick={() => onSelectSnapshot(i)}
-              title={`Epoch ${snapshot.epoch}`}
-            />
-          );
-        })}
-      </div>
 
       <div style={{
         marginTop: '10px',
@@ -149,7 +140,8 @@ const ModelTimeline = ({
         color: '#666',
         textAlign: 'center'
       }}>
-        {snapshots.length} snapshots saved | Click on timeline or use slider to navigate
+        {snapshots.length} snapshots saved
+        {snapshots.some(s => s.isTaskSwitch) && ' | Task switches marked with ●'}
       </div>
     </div>
   );
