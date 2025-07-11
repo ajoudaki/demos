@@ -3,6 +3,7 @@ import ContinualLearningDemoWrapper from './demos/ContinualLearningDemoWrapper'
 import TestNeuralNetwork from './demos/TestNeuralNetwork'
 import TestDataGeneration from './demos/TestDataGeneration'
 import TestNetworkVisualization from './demos/TestNetworkVisualization'
+import TestLossChart from './demos/TestLossChart'
 
 function App() {
   const [currentView, setCurrentView] = useState('demo');
@@ -35,6 +36,7 @@ function App() {
           <option value="test-nn">Test Neural Network</option>
           <option value="test-data">Test Data Generation</option>
           <option value="test-network-vis">Test Network Visualization</option>
+          <option value="test-loss-chart">Test Loss Chart</option>
         </select>
       </div>
       
@@ -42,6 +44,7 @@ function App() {
       {currentView === 'test-nn' && <TestNeuralNetwork />}
       {currentView === 'test-data' && <TestDataGeneration />}
       {currentView === 'test-network-vis' && <TestNetworkVisualization />}
+      {currentView === 'test-loss-chart' && <TestLossChart />}
     </div>
   )
 }
