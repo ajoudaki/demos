@@ -286,7 +286,7 @@ const NetworkVisualization = ({
         }
 
         // Add border
-        nodeGroup.append('rect')
+        const rect = nodeGroup.append('rect')
           .attr('x', node.x - nodeSize/2)
           .attr('y', node.y - nodeSize/2)
           .attr('width', nodeSize)
@@ -296,20 +296,32 @@ const NetworkVisualization = ({
           .attr('fill', 'none')
           .attr('stroke', '#333')
           .attr('stroke-width', 2)
+          .style('cursor', 'pointer');
+          
+        // Add invisible larger rect for better hover detection
+        nodeGroup.append('rect')
+          .attr('x', node.x - nodeSize/2 - 5)
+          .attr('y', node.y - nodeSize/2 - 5)
+          .attr('width', nodeSize + 10)
+          .attr('height', nodeSize + 10)
+          .attr('fill', 'transparent')
           .style('cursor', 'pointer')
           .on('mouseover', function(event) {
             if (onNodeHover) {
               onNodeHover({
-                ...node,
+                layerIndex: node.layerIndex,
+                neuronIndex: node.neuronIndex,
                 x: node.x,
                 y: node.y
               });
             }
+            rect.attr('stroke-width', 3).attr('stroke', '#0066cc');
           })
           .on('mouseout', function() {
             if (onNodeHover) {
               onNodeHover(null);
             }
+            rect.attr('stroke-width', 2).attr('stroke', '#333');
           });
       });
     } else {

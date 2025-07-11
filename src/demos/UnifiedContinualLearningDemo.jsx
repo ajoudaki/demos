@@ -702,7 +702,7 @@ const UnifiedContinualLearningDemo = () => {
                 />
                 
                 {/* Hover Decision Boundary Popup */}
-                {hoveredNode && hoveredNode.layerIndex === network.weights.length && (
+                {hoveredNode && (
                   <div style={{
                     position: 'absolute',
                     top: hoveredNode.y > 200 ? hoveredNode.y - 320 : hoveredNode.y + 40,
