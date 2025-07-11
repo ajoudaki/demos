@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import ContinualLearningDemoWrapper from './demos/ContinualLearningDemoWrapper'
 import TestNeuralNetwork from './demos/TestNeuralNetwork'
 import TestDataGeneration from './demos/TestDataGeneration'
+import TestNetworkVisualization from './demos/TestNetworkVisualization'
 
 function App() {
   const [currentView, setCurrentView] = useState('demo');
@@ -33,12 +34,14 @@ function App() {
           <option value="demo">Main Demo</option>
           <option value="test-nn">Test Neural Network</option>
           <option value="test-data">Test Data Generation</option>
+          <option value="test-network-vis">Test Network Visualization</option>
         </select>
       </div>
       
       {currentView === 'demo' && <ContinualLearningDemoWrapper />}
       {currentView === 'test-nn' && <TestNeuralNetwork />}
       {currentView === 'test-data' && <TestDataGeneration />}
+      {currentView === 'test-network-vis' && <TestNetworkVisualization />}
     </div>
   )
 }
