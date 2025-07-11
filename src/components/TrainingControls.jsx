@@ -95,7 +95,7 @@ const TrainingControls = ({
             onChange={(e) => onLearningRateChange(parseFloat(e.target.value) || 0.01)}
             disabled={isTraining}
             style={{ 
-              width: '100%',
+              width: '60px',
               padding: '3px 5px',
               fontSize: '12px',
               borderRadius: '4px',

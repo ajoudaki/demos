@@ -21,6 +21,7 @@ const UnifiedContinualLearningDemo = () => {
   // Network architecture
   const [hiddenLayers, setHiddenLayers] = useState([4, 4]);
   const [hoveredNode, setHoveredNode] = useState(null);
+  const [heatmapResolution, setHeatmapResolution] = useState(15);
   
   // Data generation settings
   const [dataType, setDataType] = useState('spiral');
@@ -472,7 +473,7 @@ const UnifiedContinualLearningDemo = () => {
                   min="1"
                   max="4"
                   style={{ 
-                    width: '100%',
+                    width: '50px',
                     padding: '3px',
                     fontSize: '12px',
                     borderRadius: '4px',
@@ -497,7 +498,7 @@ const UnifiedContinualLearningDemo = () => {
                   min="1"
                   max="8"
                   style={{ 
-                    width: '100%',
+                    width: '50px',
                     padding: '3px',
                     fontSize: '12px',
                     borderRadius: '4px',
@@ -555,7 +556,7 @@ const UnifiedContinualLearningDemo = () => {
                 onChange={(e) => setEpochsPerStep(Math.max(1, parseInt(e.target.value) || 1))}
                 min="1"
                 max="10"
-                style={{ width: '50px' }}
+                style={{ width: '45px' }}
               />
             </label>
 
@@ -568,7 +569,7 @@ const UnifiedContinualLearningDemo = () => {
                 min="10"
                 max="500"
                 step="10"
-                style={{ width: '60px' }}
+                style={{ width: '55px' }}
                 disabled={isTraining}
               />
             </label>
@@ -581,12 +582,26 @@ const UnifiedContinualLearningDemo = () => {
               />
               Show heatmaps
             </label>
+            
+            {showActivationHeatmaps && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
+                Resolution:
+                <input
+                  type="number"
+                  value={heatmapResolution}
+                  onChange={(e) => setHeatmapResolution(Math.max(5, Math.min(30, parseInt(e.target.value) || 15)))}
+                  min="5"
+                  max="30"
+                  style={{ width: '45px' }}
+                />
+              </label>
+            )}
           </div>
         </div>
-      </div>
-
-      {/* Model Timeline */}
-      <ModelTimeline
+        
+        {/* Model History Row */}
+        <div style={{ marginTop: '15px' }}>
+          <ModelTimeline
         snapshots={snapshots}
         currentIndex={currentSnapshotIndex}
         onSelectSnapshot={handleSelectSnapshot}
@@ -596,9 +611,11 @@ const UnifiedContinualLearningDemo = () => {
         onAutoSnapshotChange={setAutoSnapshot}
         onSnapshotIntervalChange={setSnapshotInterval}
         onSaveSnapshot={() => network && saveSnapshot(network, true)}
-        network={network}
-        isTraining={isTraining}
-      />
+            network={network}
+            isTraining={isTraining}
+          />
+        </div>
+      </div>
 
       {network && (
         <div style={{ 
@@ -696,24 +713,26 @@ const UnifiedContinualLearningDemo = () => {
                   network={network}
                   showWeights={true}
                   showActivationHeatmaps={showActivationHeatmaps}
-                  heatmapResolution={15}
+                  heatmapResolution={heatmapResolution}
                   dynamicSize={true}
                   onNodeHover={setHoveredNode}
                 />
                 
                 {/* Hover Decision Boundary Popup */}
                 {hoveredNode && (
-                  <div style={{
-                    position: 'absolute',
-                    top: hoveredNode.y > 200 ? hoveredNode.y - 320 : hoveredNode.y + 40,
-                    left: hoveredNode.x > 400 ? hoveredNode.x - 320 : hoveredNode.x + 40,
-                    backgroundColor: 'white',
-                    border: '2px solid #333',
-                    borderRadius: '8px',
-                    padding: '10px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                    zIndex: 1000
-                  }}>
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      top: hoveredNode.y > 200 ? hoveredNode.y - 320 : hoveredNode.y + 40,
+                      left: hoveredNode.x > 400 ? hoveredNode.x - 320 : hoveredNode.x + 40,
+                      backgroundColor: 'white',
+                      border: '2px solid #333',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                      zIndex: 1000
+                    }}
+                    onMouseLeave={() => setHoveredNode(null)}>
                     <h5 style={{ margin: '0 0 5px 0', fontSize: '12px' }}>Decision Boundary</h5>
                     <ActivationHeatmap
                       network={network}
