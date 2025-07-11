@@ -163,25 +163,6 @@ const ModelTimeline = ({
         </span>
       </div>
 
-      <div style={{
-        marginTop: '8px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        fontSize: '12px',
-        color: '#666'
-      }}>
-        <div>
-          <strong>Current:</strong> E{currentSnapshot?.epoch || 0}
-          {currentSnapshot?.dataset && ` | ${currentSnapshot.dataset}`}
-        </div>
-        <div>
-          <strong>Loss:</strong> {currentSnapshot?.trainLoss?.toFixed(3) || 'N/A'} / {currentSnapshot?.testLoss?.toFixed(3) || 'N/A'}
-        </div>
-        <div>
-          {snapshots.length} saved
-          {snapshots.some(s => s.isTaskSwitch) && ' (● = switch)'}
-        </div>
-      </div>
     </div>
   );
 };

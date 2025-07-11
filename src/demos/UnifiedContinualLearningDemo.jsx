@@ -406,7 +406,7 @@ const UnifiedContinualLearningDemo = () => {
         {/* Flexible Controls Grid */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
           {/* Training Controls Section */}
-          <div style={{ flex: '1 1 300px', minWidth: 0 }}>
+          <div>
             <TrainingControls
               isTraining={isTraining}
               onStart={handleStart}
@@ -426,7 +426,6 @@ const UnifiedContinualLearningDemo = () => {
 
           {/* Architecture & Task Section */}
           <div style={{ 
-            flex: '1 1 400px',
             display: 'flex',
             gap: '15px',
             flexWrap: 'wrap',
@@ -527,12 +526,10 @@ const UnifiedContinualLearningDemo = () => {
 
           {/* Additional Settings */}
           <div style={{ 
-            flex: '1 1 250px',
             display: 'flex',
             flexWrap: 'wrap',
             gap: '10px',
-            alignItems: 'flex-start',
-            alignContent: 'flex-start'
+            alignItems: 'center'
           }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
               Epochs/step:

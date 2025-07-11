@@ -39,38 +39,7 @@ function AppContent() {
   };
 
   return (
-    <div style={{ width: '100%', height: '100vh', margin: 0, padding: 0 }}>
-      <div style={{ 
-        position: 'absolute', 
-        top: '10px', 
-        right: '10px', 
-        zIndex: 1000,
-        backgroundColor: 'white',
-        padding: '10px',
-        borderRadius: '4px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <select 
-          value={location.pathname}
-          onChange={(e) => handleNavigate(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            fontSize: '14px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            backgroundColor: 'white',
-            cursor: 'pointer'
-          }}
-        >
-          {routes.map(route => (
-            <option key={route.path} value={route.path}>
-              {route.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      
-      <Routes>
+    <Routes>
         {routes.map(route => (
           <Route 
             key={route.path} 
@@ -78,8 +47,7 @@ function AppContent() {
             element={<route.component />} 
           />
         ))}
-      </Routes>
-    </div>
+    </Routes>
   )
 }
 
