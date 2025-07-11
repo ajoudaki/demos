@@ -1,10 +1,10 @@
 import React from 'react'
+import ContinualLearningDemoWrapper from './demos/ContinualLearningDemoWrapper'
 
 function App() {
   return (
-    <div>
-      <h1>Scientific Demos</h1>
-      <p>Neural network demos will be migrated here.</p>
+    <div style={{ width: '100%', height: '100vh', margin: 0, padding: 0 }}>
+      <ContinualLearningDemoWrapper />
     </div>
   )
 }
