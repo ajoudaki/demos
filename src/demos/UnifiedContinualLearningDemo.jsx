@@ -99,9 +99,9 @@ const UnifiedContinualLearningDemo = () => {
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const width = 270;
-    const height = 270;
-    const margin = 25;
+    const width = 370;
+    const height = 370;
+    const margin = 30;
 
     const xScale = d3.scaleLinear()
       .domain([-6, 6])
@@ -299,14 +299,56 @@ const UnifiedContinualLearningDemo = () => {
   const handleActivationTypeChange = (type) => {
     if (isTraining) return;
     setActivationType(type);
-    handleReset();
+    
+    // Reset with new activation type immediately
+    const nn = new SimpleNeuralNetwork(2, hiddenLayers.length, hiddenLayers[0]);
+    nn.hiddenLayerSizes = [...hiddenLayers];
+    nn.initializeWeightsAndBiases();
+    nn.setActivationType(type);
+    nn.setLearningRate(learningRate);
+    
+    const trainData = generateData(trainingSamples, dataType);
+    const testData = generateData(Math.floor(trainingSamples * 0.2), dataType);
+    nn.setTrainTestData(trainData, testData);
+    
+    setNetwork(nn);
+    networkRef.current = nn;
+    
+    // Clear history
+    setSnapshots([]);
+    setCurrentSnapshotIndex(0);
+    lastSnapshotEpoch.current = 0;
+    setIsViewingHistory(false);
+    setTaskSwitchPoints([]);
+    setTaskHistory([{ task: dataType, startEpoch: 0 }]);
   };
   
   // Architecture change handlers
   const handleArchitectureChange = (newLayers) => {
     if (isTraining) return;
     setHiddenLayers(newLayers);
-    handleReset();
+    
+    // Reset with new architecture immediately
+    const nn = new SimpleNeuralNetwork(2, newLayers.length, newLayers[0]);
+    nn.hiddenLayerSizes = [...newLayers];
+    nn.initializeWeightsAndBiases();
+    nn.setActivationType(activationType);
+    nn.setLearningRate(learningRate);
+    
+    const trainData = generateData(trainingSamples, dataType);
+    const testData = generateData(Math.floor(trainingSamples * 0.2), dataType);
+    nn.setTrainTestData(trainData, testData);
+    
+    setNetwork(nn);
+    networkRef.current = nn;
+    
+    // Clear history
+    setSnapshots([]);
+    setCurrentSnapshotIndex(0);
+    lastSnapshotEpoch.current = 0;
+    setIsViewingHistory(false);
+    setTaskSwitchPoints([]);
+    setTaskHistory([{ task: dataType, startEpoch: 0 }]);
   };
 
   const handleDataTypeChange = (type) => {
@@ -360,26 +402,6 @@ const UnifiedContinualLearningDemo = () => {
         flexShrink: 0
       }}>
 
-        {/* Status Row */}
-        <div style={{
-          padding: '8px 12px',
-          backgroundColor: isViewingHistory ? '#fff3cd' : '#d4edda',
-          borderRadius: '6px',
-          border: isViewingHistory ? '1px solid #ffeaa7' : '1px solid #c3e6cb',
-          marginBottom: '12px',
-          fontSize: '13px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <div>
-            <strong>Status:</strong> {isViewingHistory ? `Viewing History (E${snapshots[currentSnapshotIndex]?.epoch || 0})` : (isTraining ? 'Training...' : 'Ready')}
-            {' | '}
-            <strong>Task:</strong> {dataType.toUpperCase()}
-            {' | '}
-            <strong>Epoch:</strong> {network?.currentEpoch || 0}
-          </div>
-        </div>
 
         {/* Flexible Controls Grid */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
@@ -402,38 +424,113 @@ const UnifiedContinualLearningDemo = () => {
             />
           </div>
 
-          {/* Task Switching Section */}
+          {/* Architecture & Task Section */}
           <div style={{ 
-            flex: '1 1 200px',
+            flex: '1 1 280px',
             backgroundColor: '#e8f4f8',
             padding: '12px',
             borderRadius: '6px',
             border: '1px solid #b8e0ea'
           }}>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Task Switching</h4>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {tasks.map((task) => (
-                <button
-                  key={task}
-                  onClick={() => handleTaskSwitch(task)}
-                  disabled={isTraining || dataType === task}
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Architecture & Task</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '8px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '3px', fontSize: '11px', fontWeight: 'bold' }}>
+                  Activation
+                </label>
+                <select
+                  value={activationType}
+                  onChange={(e) => handleActivationTypeChange(e.target.value)}
+                  disabled={isTraining}
                   style={{
-                    padding: '4px 10px',
+                    width: '100%',
+                    padding: '3px',
                     fontSize: '12px',
-                    backgroundColor: dataType === task ? '#007bff' : '#6c757d',
-                    color: 'white',
-                    border: 'none',
                     borderRadius: '4px',
-                    cursor: isTraining || dataType === task ? 'not-allowed' : 'pointer',
-                    opacity: isTraining ? 0.5 : 1
+                    border: '1px solid #ced4da'
                   }}
                 >
-                  {task.toUpperCase()}
-                </button>
-              ))}
+                  <option value="tanh">Tanh</option>
+                  <option value="relu">ReLU</option>
+                  <option value="leakyRelu">Leaky ReLU</option>
+                  <option value="sigmoid">Sigmoid</option>
+                </select>
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '3px', fontSize: '11px', fontWeight: 'bold' }}>
+                  Layers
+                </label>
+                <input
+                  type="number"
+                  value={hiddenLayers.length}
+                  onChange={(e) => {
+                    const depth = Math.max(1, Math.min(4, parseInt(e.target.value) || 1));
+                    const newLayers = Array(depth).fill(hiddenLayers[0] || 4);
+                    handleArchitectureChange(newLayers);
+                  }}
+                  min="1"
+                  max="4"
+                  style={{ 
+                    width: '100%',
+                    padding: '3px',
+                    fontSize: '12px',
+                    borderRadius: '4px',
+                    border: '1px solid #ced4da'
+                  }}
+                  disabled={isTraining}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '3px', fontSize: '11px', fontWeight: 'bold' }}>
+                  Width
+                </label>
+                <input
+                  type="number"
+                  value={hiddenLayers[0]}
+                  onChange={(e) => {
+                    const width = Math.max(1, Math.min(8, parseInt(e.target.value) || 1));
+                    const newLayers = hiddenLayers.map(() => width);
+                    handleArchitectureChange(newLayers);
+                  }}
+                  min="1"
+                  max="8"
+                  style={{ 
+                    width: '100%',
+                    padding: '3px',
+                    fontSize: '12px',
+                    borderRadius: '4px',
+                    border: '1px solid #ced4da'
+                  }}
+                  disabled={isTraining}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '3px', fontSize: '11px', fontWeight: 'bold' }}>
+                  Task
+                </label>
+                <select
+                  value={dataType}
+                  onChange={(e) => handleTaskSwitch(e.target.value)}
+                  disabled={isTraining}
+                  style={{
+                    width: '100%',
+                    padding: '3px',
+                    fontSize: '12px',
+                    borderRadius: '4px',
+                    border: '1px solid #ced4da'
+                  }}
+                >
+                  {tasks.map(task => (
+                    <option key={task} value={task}>{task.toUpperCase()}</option>
+                  ))}
+                </select>
+              </div>
             </div>
             {taskHistory.length > 1 && (
-              <div style={{ marginTop: '8px', fontSize: '11px', color: '#666' }}>
+              <div style={{ marginTop: '8px', fontSize: '10px', color: '#666' }}>
                 <strong>History:</strong> {taskHistory.map((t) => 
                   `${t.task}(E${t.startEpoch})`
                 ).join(' → ')}
@@ -484,40 +581,6 @@ const UnifiedContinualLearningDemo = () => {
               />
               Show heatmaps
             </label>
-            
-            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
-              Layers:
-              <input
-                type="number"
-                value={hiddenLayers.length}
-                onChange={(e) => {
-                  const depth = Math.max(1, Math.min(4, parseInt(e.target.value) || 1));
-                  const newLayers = Array(depth).fill(hiddenLayers[0] || 4);
-                  handleArchitectureChange(newLayers);
-                }}
-                min="1"
-                max="4"
-                style={{ width: '40px' }}
-                disabled={isTraining}
-              />
-            </label>
-            
-            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
-              Width:
-              <input
-                type="number"
-                value={hiddenLayers[0]}
-                onChange={(e) => {
-                  const width = Math.max(1, Math.min(8, parseInt(e.target.value) || 1));
-                  const newLayers = hiddenLayers.map(() => width);
-                  handleArchitectureChange(newLayers);
-                }}
-                min="1"
-                max="8"
-                style={{ width: '40px' }}
-                disabled={isTraining}
-              />
-            </label>
           </div>
         </div>
       </div>
@@ -554,7 +617,7 @@ const UnifiedContinualLearningDemo = () => {
           }}>
             {/* Left Column: Training Data + Loss Chart */}
             <div style={{
-              width: '300px',
+              width: '400px',
               display: 'flex',
               flexDirection: 'column',
               gap: '15px'
@@ -568,7 +631,7 @@ const UnifiedContinualLearningDemo = () => {
                 flexDirection: 'column'
               }}>
                 <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Training Data</h4>
-                <svg ref={svgRef} width={270} height={270} style={{ alignSelf: 'center' }} />
+                <svg ref={svgRef} width={370} height={370} style={{ alignSelf: 'center' }} />
                 
                 <div style={{ marginTop: '10px' }}>
                   <label style={{ fontSize: '12px' }}>
@@ -605,8 +668,8 @@ const UnifiedContinualLearningDemo = () => {
                 <LossChart
                   trainLoss={network.trainingLoss}
                   testLoss={network.testLoss}
-                  width={270}
-                  height={150}
+                  width={370}
+                  height={180}
                   maxPoints={150}
                 />
                 {taskSwitchPoints.length > 0 && (

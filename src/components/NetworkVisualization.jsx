@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
 const NetworkVisualization = ({ 
@@ -15,30 +15,11 @@ const NetworkVisualization = ({
 }) => {
   const svgRef = useRef(null);
   const containerRef = useRef(null);
-
-  useEffect(() => {
-    if (!svgRef.current || !network) return;
-
-    // Clear previous content
-    const svg = d3.select(svgRef.current);
-    svg.selectAll('*').remove();
-    
-    // Calculate dynamic dimensions if needed
-    let actualWidth = width;
-    let actualHeight = height;
-    
-    if (dynamicSize && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      actualWidth = Math.max(400, rect.width - 40);
-      actualHeight = Math.max(300, rect.height - 40);
-      
-      // Set SVG dimensions
-      svg.attr('width', actualWidth).attr('height', actualHeight);
-    }
-
-    // Extract network architecture
-    const layers = [];
-    
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  
+  // Extract network architecture for labels
+  const layers = [];
+  if (network) {
     // Input layer
     layers.push({
       neurons: network.inputSize,
@@ -62,18 +43,58 @@ const NetworkVisualization = ({
       name: 'Output',
       activation: 'sigmoid'
     });
+  }
 
-    // Calculate positions
+  useEffect(() => {
+    if (!svgRef.current || !network) return;
+
+    // Clear previous content
+    const svg = d3.select(svgRef.current);
+    svg.selectAll('*').remove();
+    
+    // Calculate dynamic dimensions if needed
+    let actualWidth = width;
+    let actualHeight = height;
+    
+    if (dynamicSize && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      // Account for the labels below
+      actualWidth = rect.width;
+      actualHeight = rect.height - 40; // Leave space for labels
+      
+      // Set SVG dimensions
+      svg.attr('width', actualWidth).attr('height', actualHeight);
+    }
+
+
+    // Calculate positions and dynamic node size
+    const padding = 60; // Padding from edges
     const layerSpacing = actualWidth / (layers.length + 1);
+    const maxNeuronsInLayer = Math.max(...layers.map(l => l.neurons));
+    
+    // Calculate node size based on available space
+    // Consider both horizontal spacing between layers and vertical spacing between neurons
+    const minLayerSpacing = layerSpacing * 0.8; // Leave 20% gap between layers
+    const minVerticalSpacing = (actualHeight - 2 * padding) / maxNeuronsInLayer;
+    
+    // Node size should be smaller than both spacings to prevent overlap
+    const nodeSize = Math.min(
+      60, // Maximum node size
+      minLayerSpacing * 0.4, // 40% of horizontal spacing
+      minVerticalSpacing * 0.8 // 80% of vertical spacing
+    );
     const nodes = [];
     const links = [];
 
     layers.forEach((layer, layerIndex) => {
       const layerX = layerSpacing * (layerIndex + 1);
-      const neuronSpacing = actualHeight / (layer.neurons + 1);
+      
+      // Calculate vertical positions to center neurons in the layer
+      const layerHeight = layer.neurons * nodeSize + (layer.neurons - 1) * (nodeSize * 0.5); // Include gaps
+      const startY = (actualHeight - layerHeight) / 2;
 
       for (let neuronIndex = 0; neuronIndex < layer.neurons; neuronIndex++) {
-        const neuronY = neuronSpacing * (neuronIndex + 1);
+        const neuronY = startY + neuronIndex * (nodeSize * 1.5) + nodeSize / 2;
         nodes.push({
           id: `${layerIndex}-${neuronIndex}`,
           layerIndex,
@@ -136,9 +157,8 @@ const NetworkVisualization = ({
     const nodeGroup = g.append('g').attr('class', 'nodes');
     
     if (showActivationHeatmaps && network.inputSize === 2) {
-      // Calculate activation heatmaps for each neuron
-      const nodeSize = 50; // Size for square nodes
-      const borderRadius = 8; // Rounded corners
+      // Use dynamic node size
+      const borderRadius = nodeSize * 0.16; // Proportional rounded corners
       
       // Helper function to compute activation for a neuron
       const computeActivation = (layerIndex, neuronIndex, input) => {
@@ -351,17 +371,6 @@ const NetworkVisualization = ({
         .text(i === 0 ? 'X₁' : 'X₂');
     });
 
-    // Layer labels
-    layers.forEach((layer, i) => {
-      const layerX = layerSpacing * (i + 1);
-      labelGroup.append('text')
-        .attr('x', layerX)
-        .attr('y', height - 5)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '14px')
-        .style('font-weight', 'bold')
-        .text(layer.name);
-    });
 
     // Show weights on hover
     if (showWeights) {
@@ -394,15 +403,42 @@ const NetworkVisualization = ({
       };
     }
 
-  }, [network, width, height, showWeights, highlightPath, showActivationHeatmaps, heatmapResolution, inputBounds, dynamicSize, onNodeHover]);
+  }, [network, width, height, showWeights, highlightPath, showActivationHeatmaps, heatmapResolution, inputBounds, dynamicSize, onNodeHover, dimensions]);
+
+  // Add resize observer for dynamic sizing
+  useEffect(() => {
+    if (!dynamicSize || !containerRef.current) return;
+
+    const handleResize = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setDimensions({ width: rect.width, height: rect.height - 40 });
+      }
+    };
+
+    // Initial size
+    handleResize();
+
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [dynamicSize]);
 
   if (dynamicSize) {
     return (
-      <div ref={containerRef} style={{ width: '100%', height: '100%', minHeight: '400px' }}>
+      <div ref={containerRef} style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <svg 
           ref={svgRef} 
-          style={{ border: '1px solid #ddd', borderRadius: '4px' }}
+          style={{ border: '1px solid #ddd', borderRadius: '4px', flex: 1 }}
         />
+        <div style={{ display: 'flex', justifyContent: 'space-around', padding: '10px 0', fontSize: '12px', fontWeight: 'bold' }}>
+          {layers.map((layer, i) => (
+            <div key={i}>{layer.name}</div>
+          ))}
+        </div>
       </div>
     );
   }

@@ -83,71 +83,51 @@ const TrainingControls = ({
         {/* Learning Rate */}
         <div>
           <label htmlFor="learning-rate" style={{ display: 'block', marginBottom: '3px', fontSize: '12px', fontWeight: 'bold' }}>
-            LR: {learningRate.toFixed(3)}
+            Learning Rate
           </label>
           <input
             id="learning-rate"
-            type="range"
+            type="number"
             min="0.001"
-            max="0.1"
+            max="1"
             step="0.001"
             value={learningRate}
-            onChange={(e) => onLearningRateChange(parseFloat(e.target.value))}
+            onChange={(e) => onLearningRateChange(parseFloat(e.target.value) || 0.01)}
             disabled={isTraining}
-            style={{ width: '100%' }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6c757d' }}>
-            <span>0.001</span>
-            <span>0.1</span>
-          </div>
-        </div>
-
-        {/* Activation Type */}
-        <div>
-          <label htmlFor="activation-type" style={{ display: 'block', marginBottom: '3px', fontSize: '12px', fontWeight: 'bold' }}>
-            Activation
-          </label>
-          <select
-            id="activation-type"
-            value={activationType}
-            onChange={(e) => onActivationTypeChange(e.target.value)}
-            disabled={isTraining}
-            style={{
+            style={{ 
               width: '100%',
-              padding: '3px',
+              padding: '3px 5px',
               fontSize: '12px',
               borderRadius: '4px',
               border: '1px solid #ced4da'
             }}
-          >
-            <option value="tanh">Tanh</option>
-            <option value="relu">ReLU</option>
-            <option value="leakyRelu">Leaky ReLU</option>
-            <option value="sigmoid">Sigmoid</option>
-          </select>
+          />
         </div>
+
 
         {/* Batch Size */}
         {onBatchSizeChange && (
           <div>
             <label htmlFor="batch-size" style={{ display: 'block', marginBottom: '3px', fontSize: '12px', fontWeight: 'bold' }}>
-              Batch: {batchSize}
+              Batch Size
             </label>
             <input
               id="batch-size"
-              type="range"
+              type="number"
               min="1"
-              max="64"
+              max="128"
               step="1"
               value={batchSize}
-              onChange={(e) => onBatchSizeChange(parseInt(e.target.value))}
+              onChange={(e) => onBatchSizeChange(parseInt(e.target.value) || 32)}
               disabled={isTraining}
-              style={{ width: '100%' }}
+              style={{ 
+                width: '100%',
+                padding: '3px 5px',
+                fontSize: '12px',
+                borderRadius: '4px',
+                border: '1px solid #ced4da'
+              }}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6c757d' }}>
-              <span>1</span>
-              <span>64</span>
-            </div>
           </div>
         )}
 
