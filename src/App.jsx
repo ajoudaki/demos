@@ -9,6 +9,7 @@ import TestActivationHeatmap from './demos/TestActivationHeatmap'
 import TestTrainingControls from './demos/TestTrainingControls'
 import IntegratedTrainingDemo from './demos/IntegratedTrainingDemo'
 import IntegratedTrainingDemoSimple from './demos/IntegratedTrainingDemoSimple'
+import ContinualLearningFeatureDemo from './demos/ContinualLearningFeatureDemo'
 
 function App() {
   const [currentView, setCurrentView] = useState('demo');
@@ -47,6 +48,7 @@ function App() {
           <option value="test-training-controls">Test Training Controls</option>
           <option value="integrated-training">Integrated Training Demo</option>
           <option value="integrated-training-simple">Integrated Training (Simple)</option>
+          <option value="continual-learning">Continual Learning</option>
         </select>
       </div>
       
@@ -60,6 +62,7 @@ function App() {
       {currentView === 'test-training-controls' && <TestTrainingControls />}
       {currentView === 'integrated-training' && <IntegratedTrainingDemo />}
       {currentView === 'integrated-training-simple' && <IntegratedTrainingDemoSimple />}
+      {currentView === 'continual-learning' && <ContinualLearningFeatureDemo />}
     </div>
   )
 }
