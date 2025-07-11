@@ -45,7 +45,9 @@ const UnifiedContinualLearningDemo = () => {
   const networkRef = useRef(null);
   const svgRef = useRef(null);
   const dataContainerRef = useRef(null);
+  const lossChartContainerRef = useRef(null);
   const [svgDimensions, setSvgDimensions] = useState({ width: 370, height: 370 });
+  const [lossChartWidth, setLossChartWidth] = useState(370);
   const epochsPerStepRef = useRef(epochsPerStep);
   const batchSizeRef = useRef(batchSize);
   const lastSnapshotEpoch = useRef(0);
@@ -102,7 +104,10 @@ const UnifiedContinualLearningDemo = () => {
     const handleResize = () => {
       if (dataContainerRef.current) {
         const rect = dataContainerRef.current.getBoundingClientRect();
-        const size = Math.min(rect.width - 30, rect.height - 50, 500); // Max 500px
+        // Use container width minus padding
+        const availableWidth = rect.width - 30;
+        // Keep square aspect ratio
+        const size = Math.min(availableWidth, 370);
         setSvgDimensions({ width: size, height: size });
       }
     };
@@ -110,6 +115,26 @@ const UnifiedContinualLearningDemo = () => {
     handleResize();
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(dataContainerRef.current);
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  // Handle responsive sizing for loss chart
+  useEffect(() => {
+    if (!lossChartContainerRef.current) return;
+
+    const handleResize = () => {
+      if (lossChartContainerRef.current) {
+        const rect = lossChartContainerRef.current.getBoundingClientRect();
+        // Use container width minus padding
+        const availableWidth = rect.width - 30;
+        setLossChartWidth(Math.min(availableWidth, 370));
+      }
+    };
+
+    handleResize();
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(lossChartContainerRef.current);
 
     return () => resizeObserver.disconnect();
   }, []);
@@ -632,9 +657,8 @@ const UnifiedContinualLearningDemo = () => {
           }}>
             {/* Left Column: Training Data + Loss Chart */}
             <div style={{
-              flex: '0 0 30%',
-              minWidth: '300px',
-              maxWidth: '500px',
+              width: '400px',
+              flexShrink: 0,
               display: 'flex',
               flexDirection: 'column',
               gap: '15px'
@@ -656,18 +680,21 @@ const UnifiedContinualLearningDemo = () => {
               </div>
               
               {/* Loss Chart */}
-              <div style={{ 
-                flex: 1,
-                backgroundColor: '#f5f5f5',
-                padding: '15px',
-                borderRadius: '8px',
-                minHeight: '200px'
-              }}>
+              <div 
+                ref={lossChartContainerRef}
+                style={{ 
+                  flex: 1,
+                  backgroundColor: '#f5f5f5',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  minHeight: '200px'
+                }}
+              >
                 <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Training Progress</h4>
                 <LossChart
                   trainLoss={network.trainingLoss}
                   testLoss={network.testLoss}
-                  width={svgDimensions.width}
+                  width={lossChartWidth}
                   height={180}
                   maxPoints={150}
                 />
