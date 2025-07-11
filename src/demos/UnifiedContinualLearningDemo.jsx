@@ -44,6 +44,8 @@ const UnifiedContinualLearningDemo = () => {
   const animationRef = useRef(null);
   const networkRef = useRef(null);
   const svgRef = useRef(null);
+  const dataContainerRef = useRef(null);
+  const [svgDimensions, setSvgDimensions] = useState({ width: 370, height: 370 });
   const epochsPerStepRef = useRef(epochsPerStep);
   const batchSizeRef = useRef(batchSize);
   const lastSnapshotEpoch = useRef(0);
@@ -93,6 +95,25 @@ const UnifiedContinualLearningDemo = () => {
     initializeNetwork();
   }, []);
 
+  // Handle responsive sizing for data visualization
+  useEffect(() => {
+    if (!dataContainerRef.current) return;
+
+    const handleResize = () => {
+      if (dataContainerRef.current) {
+        const rect = dataContainerRef.current.getBoundingClientRect();
+        const size = Math.min(rect.width - 30, rect.height - 50, 500); // Max 500px
+        setSvgDimensions({ width: size, height: size });
+      }
+    };
+
+    handleResize();
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(dataContainerRef.current);
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
   // Draw current dataset
   useEffect(() => {
     if (!svgRef.current || !network) return;
@@ -100,8 +121,8 @@ const UnifiedContinualLearningDemo = () => {
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const width = 370;
-    const height = 370;
+    const width = svgDimensions.width;
+    const height = svgDimensions.height;
     const margin = 30;
 
     const xScale = d3.scaleLinear()
@@ -137,16 +158,8 @@ const UnifiedContinualLearningDemo = () => {
         .attr('opacity', 0.8);
     }
 
-    // Add title with current task
-    svg.append('text')
-      .attr('x', width / 2)
-      .attr('y', 12)
-      .attr('text-anchor', 'middle')
-      .style('font-size', '12px')
-      .style('font-weight', 'bold')
-      .text(`Task: ${dataType.toUpperCase()}`);
 
-  }, [network, dataType]);
+  }, [network, dataType, svgDimensions]);
 
   // Save snapshot function
   const saveSnapshot = (network, isManual = false, isTaskSwitch = false) => {
@@ -582,22 +595,24 @@ const UnifiedContinualLearningDemo = () => {
           </div>
         </div>
         
-        {/* Model History Row */}
-        <div style={{ marginTop: '15px' }}>
-          <ModelTimeline
-        snapshots={snapshots}
-        currentIndex={currentSnapshotIndex}
-        onSelectSnapshot={handleSelectSnapshot}
-        onClearHistory={handleClearHistory}
-        autoSnapshot={autoSnapshot}
-        snapshotInterval={snapshotInterval}
-        onAutoSnapshotChange={setAutoSnapshot}
-        onSnapshotIntervalChange={setSnapshotInterval}
-        onSaveSnapshot={() => network && saveSnapshot(network, true)}
-            network={network}
-            isTraining={isTraining}
-          />
-        </div>
+        {/* Model History Row - only show if snapshots exist */}
+        {snapshots.length > 0 && (
+          <div style={{ marginTop: '15px' }}>
+            <ModelTimeline
+              snapshots={snapshots}
+              currentIndex={currentSnapshotIndex}
+              onSelectSnapshot={handleSelectSnapshot}
+              onClearHistory={handleClearHistory}
+              autoSnapshot={autoSnapshot}
+              snapshotInterval={snapshotInterval}
+              onAutoSnapshotChange={setAutoSnapshot}
+              onSnapshotIntervalChange={setSnapshotInterval}
+              onSaveSnapshot={() => network && saveSnapshot(network, true)}
+              network={network}
+              isTraining={isTraining}
+            />
+          </div>
+        )}
       </div>
 
       {network && (
@@ -617,43 +632,27 @@ const UnifiedContinualLearningDemo = () => {
           }}>
             {/* Left Column: Training Data + Loss Chart */}
             <div style={{
-              width: '400px',
+              flex: '0 0 30%',
+              minWidth: '300px',
+              maxWidth: '500px',
               display: 'flex',
               flexDirection: 'column',
               gap: '15px'
             }}>
               {/* Training Data */}
-              <div style={{ 
-                backgroundColor: '#f5f5f5',
-                padding: '15px',
-                borderRadius: '8px',
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
+              <div 
+                ref={dataContainerRef}
+                style={{ 
+                  backgroundColor: '#f5f5f5',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  flex: 1
+                }}
+              >
                 <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Training Data</h4>
-                <svg ref={svgRef} width={370} height={370} style={{ alignSelf: 'center' }} />
-                
-                <div style={{ marginTop: '10px' }}>
-                  <label style={{ fontSize: '12px' }}>
-                    Dataset:
-                    <select
-                      value={dataType}
-                      onChange={(e) => handleDataTypeChange(e.target.value)}
-                      disabled={isTraining}
-                      style={{
-                        marginLeft: '5px',
-                        padding: '2px 5px',
-                        fontSize: '12px',
-                        borderRadius: '4px',
-                        border: '1px solid #ccc'
-                      }}
-                    >
-                      {tasks.map(task => (
-                        <option key={task} value={task}>{task.toUpperCase()}</option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
+                <svg ref={svgRef} width={svgDimensions.width} height={svgDimensions.height} style={{ alignSelf: 'center' }} />
               </div>
               
               {/* Loss Chart */}
@@ -668,7 +667,7 @@ const UnifiedContinualLearningDemo = () => {
                 <LossChart
                   trainLoss={network.trainingLoss}
                   testLoss={network.testLoss}
-                  width={370}
+                  width={svgDimensions.width}
                   height={180}
                   maxPoints={150}
                 />
