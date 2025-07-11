@@ -10,6 +10,7 @@ import TestTrainingControls from './demos/TestTrainingControls'
 import IntegratedTrainingDemo from './demos/IntegratedTrainingDemo'
 import IntegratedTrainingDemoSimple from './demos/IntegratedTrainingDemoSimple'
 import ContinualLearningFeatureDemo from './demos/ContinualLearningFeatureDemo'
+import ModelHistoryDemo from './demos/ModelHistoryDemo'
 
 function App() {
   const [currentView, setCurrentView] = useState('demo');
@@ -49,6 +50,7 @@ function App() {
           <option value="integrated-training">Integrated Training Demo</option>
           <option value="integrated-training-simple">Integrated Training (Simple)</option>
           <option value="continual-learning">Continual Learning</option>
+          <option value="model-history">Model History</option>
         </select>
       </div>
       
@@ -63,6 +65,7 @@ function App() {
       {currentView === 'integrated-training' && <IntegratedTrainingDemo />}
       {currentView === 'integrated-training-simple' && <IntegratedTrainingDemoSimple />}
       {currentView === 'continual-learning' && <ContinualLearningFeatureDemo />}
+      {currentView === 'model-history' && <ModelHistoryDemo />}
     </div>
   )
 }
