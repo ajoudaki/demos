@@ -18,6 +18,10 @@ const UnifiedContinualLearningDemo = () => {
   const [epochsPerStep, setEpochsPerStep] = useState(1);
   const [showActivationHeatmaps, setShowActivationHeatmaps] = useState(true);
   
+  // Network architecture
+  const [hiddenLayers, setHiddenLayers] = useState([4, 4]);
+  const [hoveredNode, setHoveredNode] = useState(null);
+  
   // Data generation settings
   const [dataType, setDataType] = useState('spiral');
   const [trainingSamples, setTrainingSamples] = useState(100);
@@ -56,8 +60,15 @@ const UnifiedContinualLearningDemo = () => {
   }, [batchSize]);
 
   // Initialize network
-  useEffect(() => {
-    const nn = new SimpleNeuralNetwork(2, 2, 4);
+  const initializeNetwork = () => {
+    const nn = new SimpleNeuralNetwork(2, hiddenLayers.length, hiddenLayers[0]);
+    
+    // Set hidden layer sizes if more than one layer
+    if (hiddenLayers.length > 1) {
+      nn.hiddenLayerSizes = [...hiddenLayers];
+      nn.initializeWeightsAndBiases();
+    }
+    
     nn.setActivationType(activationType);
     nn.setLearningRate(learningRate);
     
@@ -68,8 +79,17 @@ const UnifiedContinualLearningDemo = () => {
     setNetwork(nn);
     networkRef.current = nn;
     
-    // Record initial task
+    // Clear history on architecture change
+    setSnapshots([]);
+    setCurrentSnapshotIndex(0);
+    lastSnapshotEpoch.current = 0;
+    setIsViewingHistory(false);
+    setTaskSwitchPoints([]);
     setTaskHistory([{ task: dataType, startEpoch: 0 }]);
+  };
+  
+  useEffect(() => {
+    initializeNetwork();
   }, []);
 
   // Draw current dataset
@@ -79,9 +99,9 @@ const UnifiedContinualLearningDemo = () => {
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const width = 220;
-    const height = 220;
-    const margin = 20;
+    const width = 270;
+    const height = 270;
+    const margin = 25;
 
     const xScale = d3.scaleLinear()
       .domain([-6, 6])
@@ -212,22 +232,7 @@ const UnifiedContinualLearningDemo = () => {
 
   const handleReset = () => {
     handleStop();
-    const nn = new SimpleNeuralNetwork(2, 2, 4);
-    nn.setActivationType(activationType);
-    nn.setLearningRate(learningRate);
-    
-    const trainData = generateData(trainingSamples, dataType);
-    const testData = generateData(Math.floor(trainingSamples * 0.2), dataType);
-    nn.setTrainTestData(trainData, testData);
-    
-    setNetwork(nn);
-    networkRef.current = nn;
-    setSnapshots([]);
-    setCurrentSnapshotIndex(0);
-    lastSnapshotEpoch.current = 0;
-    setIsViewingHistory(false);
-    setTaskSwitchPoints([]);
-    setTaskHistory([{ task: dataType, startEpoch: 0 }]);
+    initializeNetwork();
   };
 
   // Task switching
@@ -292,10 +297,16 @@ const UnifiedContinualLearningDemo = () => {
   };
 
   const handleActivationTypeChange = (type) => {
+    if (isTraining) return;
     setActivationType(type);
-    if (network && !isViewingHistory) {
-      network.setActivationType(type);
-    }
+    handleReset();
+  };
+  
+  // Architecture change handlers
+  const handleArchitectureChange = (newLayers) => {
+    if (isTraining) return;
+    setHiddenLayers(newLayers);
+    handleReset();
   };
 
   const handleDataTypeChange = (type) => {
@@ -473,6 +484,40 @@ const UnifiedContinualLearningDemo = () => {
               />
               Show heatmaps
             </label>
+            
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
+              Layers:
+              <input
+                type="number"
+                value={hiddenLayers.length}
+                onChange={(e) => {
+                  const depth = Math.max(1, Math.min(4, parseInt(e.target.value) || 1));
+                  const newLayers = Array(depth).fill(hiddenLayers[0] || 4);
+                  handleArchitectureChange(newLayers);
+                }}
+                min="1"
+                max="4"
+                style={{ width: '40px' }}
+                disabled={isTraining}
+              />
+            </label>
+            
+            <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}>
+              Width:
+              <input
+                type="number"
+                value={hiddenLayers[0]}
+                onChange={(e) => {
+                  const width = Math.max(1, Math.min(8, parseInt(e.target.value) || 1));
+                  const newLayers = hiddenLayers.map(() => width);
+                  handleArchitectureChange(newLayers);
+                }}
+                min="1"
+                max="8"
+                style={{ width: '40px' }}
+                disabled={isTraining}
+              />
+            </label>
           </div>
         </div>
       </div>
@@ -507,38 +552,68 @@ const UnifiedContinualLearningDemo = () => {
             gap: '15px',
             minHeight: 0
           }}>
-            {/* Left: Training Data */}
-            <div style={{ 
-              width: '250px',
-              backgroundColor: '#f5f5f5',
-              padding: '15px',
-              borderRadius: '8px',
+            {/* Left Column: Training Data + Loss Chart */}
+            <div style={{
+              width: '300px',
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              gap: '15px'
             }}>
-              <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Training Data</h4>
-              <svg ref={svgRef} width={220} height={220} style={{ alignSelf: 'center' }} />
+              {/* Training Data */}
+              <div style={{ 
+                backgroundColor: '#f5f5f5',
+                padding: '15px',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Training Data</h4>
+                <svg ref={svgRef} width={270} height={270} style={{ alignSelf: 'center' }} />
+                
+                <div style={{ marginTop: '10px' }}>
+                  <label style={{ fontSize: '12px' }}>
+                    Dataset:
+                    <select
+                      value={dataType}
+                      onChange={(e) => handleDataTypeChange(e.target.value)}
+                      disabled={isTraining}
+                      style={{
+                        marginLeft: '5px',
+                        padding: '2px 5px',
+                        fontSize: '12px',
+                        borderRadius: '4px',
+                        border: '1px solid #ccc'
+                      }}
+                    >
+                      {tasks.map(task => (
+                        <option key={task} value={task}>{task.toUpperCase()}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </div>
               
-              <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
-                <label style={{ fontSize: '12px' }}>
-                  Dataset:
-                  <select
-                    value={dataType}
-                    onChange={(e) => handleDataTypeChange(e.target.value)}
-                    disabled={isTraining}
-                    style={{
-                      marginLeft: '5px',
-                      padding: '2px 5px',
-                      fontSize: '12px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc'
-                    }}
-                  >
-                    {tasks.map(task => (
-                      <option key={task} value={task}>{task.toUpperCase()}</option>
-                    ))}
-                  </select>
-                </label>
+              {/* Loss Chart */}
+              <div style={{ 
+                flex: 1,
+                backgroundColor: '#f5f5f5',
+                padding: '15px',
+                borderRadius: '8px',
+                minHeight: '200px'
+              }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Training Progress</h4>
+                <LossChart
+                  trainLoss={network.trainingLoss}
+                  testLoss={network.testLoss}
+                  width={270}
+                  height={150}
+                  maxPoints={150}
+                />
+                {taskSwitchPoints.length > 0 && (
+                  <div style={{ marginTop: '5px', fontSize: '10px', color: '#666' }}>
+                    Switches: {taskSwitchPoints.map(e => `E${e}`).join(', ')}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -553,73 +628,47 @@ const UnifiedContinualLearningDemo = () => {
               minWidth: 0
             }}>
               <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Network Architecture</h4>
-              <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
                 <NetworkVisualization
                   network={network}
-                  width={600}
-                  height={400}
                   showWeights={true}
                   showActivationHeatmaps={showActivationHeatmaps}
                   heatmapResolution={15}
+                  dynamicSize={true}
+                  onNodeHover={setHoveredNode}
                 />
-              </div>
-            </div>
-
-            {/* Right Column: Decision Boundary + Loss Chart */}
-            <div style={{
-              width: '350px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '15px'
-            }}>
-              {/* Decision Boundary */}
-              <div style={{ 
-                flex: '1',
-                backgroundColor: '#f5f5f5',
-                padding: '15px',
-                borderRadius: '8px',
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Decision Boundary</h4>
-                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <ActivationHeatmap
-                    network={network}
-                    layerIndex={3}
-                    neuronIndex={0}
-                    resolution={30}
-                    width={280}
-                    height={280}
-                    inputBounds={[-6, 6]}
-                    colorScheme="redblue"
-                    showAxes={true}
-                    title=""
-                  />
-                </div>
-              </div>
-
-              {/* Loss Chart */}
-              <div style={{ 
-                height: '180px',
-                backgroundColor: '#f5f5f5',
-                padding: '15px',
-                borderRadius: '8px'
-              }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Training Progress</h4>
-                <LossChart
-                  trainLoss={network.trainingLoss}
-                  testLoss={network.testLoss}
-                  width={320}
-                  height={120}
-                  maxPoints={150}
-                />
-                {taskSwitchPoints.length > 0 && (
-                  <div style={{ marginTop: '5px', fontSize: '10px', color: '#666' }}>
-                    Switches: {taskSwitchPoints.map(e => `E${e}`).join(', ')}
+                
+                {/* Hover Decision Boundary Popup */}
+                {hoveredNode && hoveredNode.layerIndex === network.weights.length && (
+                  <div style={{
+                    position: 'absolute',
+                    top: hoveredNode.y > 200 ? hoveredNode.y - 320 : hoveredNode.y + 40,
+                    left: hoveredNode.x > 400 ? hoveredNode.x - 320 : hoveredNode.x + 40,
+                    backgroundColor: 'white',
+                    border: '2px solid #333',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                    zIndex: 1000
+                  }}>
+                    <h5 style={{ margin: '0 0 5px 0', fontSize: '12px' }}>Decision Boundary</h5>
+                    <ActivationHeatmap
+                      network={network}
+                      layerIndex={hoveredNode.layerIndex}
+                      neuronIndex={hoveredNode.neuronIndex}
+                      resolution={40}
+                      width={300}
+                      height={300}
+                      inputBounds={[-6, 6]}
+                      colorScheme="redblue"
+                      showAxes={true}
+                      title=""
+                    />
                   </div>
                 )}
               </div>
             </div>
+
           </div>
         </div>
       )}

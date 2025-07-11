@@ -6,28 +6,13 @@ export class SimpleNeuralNetwork {
     this.inputSize = inputSize;
     this.hiddenLayers = hiddenLayers;
     this.neuronsPerLayer = neuronsPerLayer;
+    this.hiddenLayerSizes = Array(hiddenLayers).fill(neuronsPerLayer);
     this.learningRate = 0.01;
     this.activationType = 'tanh';
     this.useBias = true;
     this.gridSize = 30;
     
-    // Initialize network architecture
-    this.weights = [];
-    this.biases = [];
-    
-    // Input -> first hidden
-    this.weights.push(this.initializeWeights(inputSize, neuronsPerLayer));
-    this.biases.push(this.initializeWeights(1, neuronsPerLayer)[0]);
-    
-    // Hidden layers
-    for (let i = 0; i < hiddenLayers - 1; i++) {
-      this.weights.push(this.initializeWeights(neuronsPerLayer, neuronsPerLayer));
-      this.biases.push(this.initializeWeights(1, neuronsPerLayer)[0]);
-    }
-    
-    // Last hidden -> output
-    this.weights.push(this.initializeWeights(neuronsPerLayer, 1));
-    this.biases.push(this.initializeWeights(1, 1)[0]);
+    this.initializeWeightsAndBiases();
     
     // Tracking
     this.trainingLoss = [];
@@ -39,6 +24,28 @@ export class SimpleNeuralNetwork {
     // Store the current training/test data
     this.currentTrainData = { data: [], labels: [] };
     this.currentTestData = { data: [], labels: [] };
+  }
+  
+  initializeWeightsAndBiases() {
+    this.weights = [];
+    this.biases = [];
+    
+    // Input -> first hidden
+    this.weights.push(this.initializeWeights(this.inputSize, this.hiddenLayerSizes[0]));
+    this.biases.push(this.initializeWeights(1, this.hiddenLayerSizes[0])[0]);
+    
+    // Hidden layers
+    for (let i = 0; i < this.hiddenLayers - 1; i++) {
+      const currentSize = this.hiddenLayerSizes[i];
+      const nextSize = this.hiddenLayerSizes[i + 1];
+      this.weights.push(this.initializeWeights(currentSize, nextSize));
+      this.biases.push(this.initializeWeights(1, nextSize)[0]);
+    }
+    
+    // Last hidden -> output
+    const lastHiddenSize = this.hiddenLayerSizes[this.hiddenLayers - 1];
+    this.weights.push(this.initializeWeights(lastHiddenSize, 1));
+    this.biases.push(this.initializeWeights(1, 1)[0]);
   }
   
   initializeWeights(rows, cols) {
@@ -60,35 +67,21 @@ export class SimpleNeuralNetwork {
   }
   
   reset() {
-    // Reset all weights
-    this.weights = [];
-    this.biases = [];
-    
     // Reinitialize weights with the current architecture
-    // Input -> first hidden
-    this.weights.push(this.initializeWeights(this.inputSize, this.neuronsPerLayer));
-    this.biases.push(this.initializeWeights(1, this.neuronsPerLayer)[0]);
-    
-    // Hidden layers
-    for (let i = 0; i < this.hiddenLayers - 1; i++) {
-      this.weights.push(this.initializeWeights(this.neuronsPerLayer, this.neuronsPerLayer));
-      this.biases.push(this.initializeWeights(1, this.neuronsPerLayer)[0]);
-    }
-    
-    // Last hidden -> output
-    this.weights.push(this.initializeWeights(this.neuronsPerLayer, 1));
-    this.biases.push(this.initializeWeights(1, 1)[0]);
+    this.initializeWeightsAndBiases();
     
     // Reset tracking variables
     this.trainingLoss = [];
     this.testLoss = [];
     this.averageGradients = [];
+    this.currentGradients = [];
     this.currentEpoch = 0;
   }
   
   // Make a clone for history tracking
   clone() {
     const clone = new SimpleNeuralNetwork(this.inputSize, this.hiddenLayers, this.neuronsPerLayer);
+    clone.hiddenLayerSizes = [...this.hiddenLayerSizes];
     clone.weights = JSON.parse(JSON.stringify(this.weights));
     clone.biases = JSON.parse(JSON.stringify(this.biases));
     

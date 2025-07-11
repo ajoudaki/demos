@@ -9,9 +9,12 @@ const NetworkVisualization = ({
   highlightPath = null,
   showActivationHeatmaps = false,
   heatmapResolution = 10,
-  inputBounds = [-6, 6]
+  inputBounds = [-6, 6],
+  dynamicSize = false,
+  onNodeHover = null
 }) => {
   const svgRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (!svgRef.current || !network) return;
@@ -19,6 +22,19 @@ const NetworkVisualization = ({
     // Clear previous content
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
+    
+    // Calculate dynamic dimensions if needed
+    let actualWidth = width;
+    let actualHeight = height;
+    
+    if (dynamicSize && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      actualWidth = Math.max(400, rect.width - 40);
+      actualHeight = Math.max(300, rect.height - 40);
+      
+      // Set SVG dimensions
+      svg.attr('width', actualWidth).attr('height', actualHeight);
+    }
 
     // Extract network architecture
     const layers = [];
@@ -30,10 +46,11 @@ const NetworkVisualization = ({
       activation: null
     });
 
-    // Hidden layers
+    // Hidden layers with variable sizes
+    const hiddenSizes = network.hiddenLayerSizes || Array(network.hiddenLayers).fill(network.neuronsPerLayer);
     for (let i = 0; i < network.hiddenLayers; i++) {
       layers.push({
-        neurons: network.neuronsPerLayer,
+        neurons: hiddenSizes[i],
         name: `Hidden ${i + 1}`,
         activation: network.activationType
       });
@@ -47,13 +64,13 @@ const NetworkVisualization = ({
     });
 
     // Calculate positions
-    const layerSpacing = width / (layers.length + 1);
+    const layerSpacing = actualWidth / (layers.length + 1);
     const nodes = [];
     const links = [];
 
     layers.forEach((layer, layerIndex) => {
       const layerX = layerSpacing * (layerIndex + 1);
-      const neuronSpacing = height / (layer.neurons + 1);
+      const neuronSpacing = actualHeight / (layer.neurons + 1);
 
       for (let neuronIndex = 0; neuronIndex < layer.neurons; neuronIndex++) {
         const neuronY = neuronSpacing * (neuronIndex + 1);
@@ -258,7 +275,22 @@ const NetworkVisualization = ({
           .attr('ry', borderRadius)
           .attr('fill', 'none')
           .attr('stroke', '#333')
-          .attr('stroke-width', 2);
+          .attr('stroke-width', 2)
+          .style('cursor', 'pointer')
+          .on('mouseover', function(event) {
+            if (onNodeHover) {
+              onNodeHover({
+                ...node,
+                x: node.x,
+                y: node.y
+              });
+            }
+          })
+          .on('mouseout', function() {
+            if (onNodeHover) {
+              onNodeHover(null);
+            }
+          });
       });
     } else {
       // Regular node visualization
@@ -362,7 +394,18 @@ const NetworkVisualization = ({
       };
     }
 
-  }, [network, width, height, showWeights, highlightPath, showActivationHeatmaps, heatmapResolution, inputBounds]);
+  }, [network, width, height, showWeights, highlightPath, showActivationHeatmaps, heatmapResolution, inputBounds, dynamicSize, onNodeHover]);
+
+  if (dynamicSize) {
+    return (
+      <div ref={containerRef} style={{ width: '100%', height: '100%', minHeight: '400px' }}>
+        <svg 
+          ref={svgRef} 
+          style={{ border: '1px solid #ddd', borderRadius: '4px' }}
+        />
+      </div>
+    );
+  }
 
   return (
     <svg 
