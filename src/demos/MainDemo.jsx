@@ -12,7 +12,7 @@ const MainDemo = () => {
       title: "Integrated Training",
       path: "integrated-training",
       description: "Live neural network training with real-time visualizations",
-      features: ["Real-time weight updates", "Loss curves", "Activation heatmaps", "Multiple datasets"]
+      features: ["Real-time weight updates", "Loss curves", "Neuron activation heatmaps", "Multiple datasets"]
     },
     {
       title: "Continual Learning",
@@ -42,7 +42,7 @@ const MainDemo = () => {
     {
       title: "Network Visualization",
       path: "test-network-vis",
-      description: "D3-based network architecture display"
+      description: "Interactive network architecture with activation heatmaps"
     },
     {
       title: "Loss Chart",
@@ -96,7 +96,7 @@ const MainDemo = () => {
           <li>Multiple 2D classification datasets (XOR, Spiral, Circle, Ring, Gaussian)</li>
           <li>Continual learning with task switching</li>
           <li>Model history and timeline navigation</li>
-          <li>Interactive network architecture visualization</li>
+          <li>Interactive network architecture with activation heatmaps on neurons</li>
           <li>Simple implementation following "don't over-engineer" principle</li>
         </ul>
       </div>

@@ -19,6 +19,7 @@ const ModelHistoryDemo = () => {
   const [currentSnapshotIndex, setCurrentSnapshotIndex] = useState(0);
   const [snapshotInterval, setSnapshotInterval] = useState(10);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
+  const [showActivationHeatmaps, setShowActivationHeatmaps] = useState(true);
   
   const animationRef = useRef(null);
   const networkRef = useRef(null);
@@ -329,11 +330,27 @@ const ModelHistoryDemo = () => {
               borderRadius: '8px'
             }}>
               <h3>Network Architecture</h3>
+              <label style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px',
+                marginBottom: '10px',
+                fontSize: '14px'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={showActivationHeatmaps}
+                  onChange={(e) => setShowActivationHeatmaps(e.target.checked)}
+                />
+                Show activation heatmaps on neurons
+              </label>
               <NetworkVisualization
                 network={network}
                 width={500}
                 height={300}
                 showWeights={true}
+                showActivationHeatmaps={showActivationHeatmaps}
+                heatmapResolution={15}
               />
             </div>
           </div>

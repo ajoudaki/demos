@@ -18,6 +18,7 @@ const IntegratedTrainingDemo = () => {
   const [trainingSamples, setTrainingSamples] = useState(100);
   const [selectedNeuron, setSelectedNeuron] = useState({ layer: 0, index: 0 });
   const [updateTrigger, setUpdateTrigger] = useState(0);
+  const [showActivationHeatmaps, setShowActivationHeatmaps] = useState(true);
   
   const animationRef = useRef(null);
   const svgRef = useRef(null);
@@ -300,11 +301,27 @@ const IntegratedTrainingDemo = () => {
               borderRadius: '8px'
             }}>
               <h3>Network Architecture</h3>
+              <label style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px',
+                marginBottom: '10px',
+                fontSize: '14px'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={showActivationHeatmaps}
+                  onChange={(e) => setShowActivationHeatmaps(e.target.checked)}
+                />
+                Show activation heatmaps on neurons
+              </label>
               <NetworkVisualization
                 network={network}
                 width={400}
                 height={400}
                 showWeights={true}
+                showActivationHeatmaps={showActivationHeatmaps}
+                heatmapResolution={15}
               />
             </div>
           </div>

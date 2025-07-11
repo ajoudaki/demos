@@ -12,6 +12,7 @@ import IntegratedTrainingDemoSimple from './demos/IntegratedTrainingDemoSimple'
 import ContinualLearningFeatureDemo from './demos/ContinualLearningFeatureDemo'
 import ModelHistoryDemo from './demos/ModelHistoryDemo'
 import MainDemo from './demos/MainDemo'
+import TestNetworkVisualizationWithHeatmaps from './demos/TestNetworkVisualizationWithHeatmaps'
 
 function App() {
   const [currentView, setCurrentView] = useState('main');
@@ -45,6 +46,7 @@ function App() {
           <option value="test-nn">Test Neural Network</option>
           <option value="test-data">Test Data Generation</option>
           <option value="test-network-vis">Test Network Visualization</option>
+          <option value="test-network-vis-heatmaps">Network Visualization with Heatmaps</option>
           <option value="test-loss-chart">Test Loss Chart</option>
           <option value="test-heatmap">Test Heatmap</option>
           <option value="test-activation-heatmap">Test Activation Heatmap</option>
@@ -61,6 +63,7 @@ function App() {
       {currentView === 'test-nn' && <TestNeuralNetwork />}
       {currentView === 'test-data' && <TestDataGeneration />}
       {currentView === 'test-network-vis' && <TestNetworkVisualization />}
+      {currentView === 'test-network-vis-heatmaps' && <TestNetworkVisualizationWithHeatmaps />}
       {currentView === 'test-loss-chart' && <TestLossChart />}
       {currentView === 'test-heatmap' && <TestHeatmapVisualization />}
       {currentView === 'test-activation-heatmap' && <TestActivationHeatmap />}
