@@ -66,6 +66,37 @@ const NetworkVisualization = ({
       svg.attr('width', actualWidth).attr('height', actualHeight);
     }
 
+    // Pre-compute all activations for the grid if showing heatmaps
+    let gridActivations = null;
+    if (showActivationHeatmaps && network.inputSize === 2) {
+      gridActivations = new Map();
+      const step = (inputBounds[1] - inputBounds[0]) / heatmapResolution;
+      
+      // Do N² forward passes total, collecting all neuron activations
+      for (let i = 0; i < heatmapResolution; i++) {
+        for (let j = 0; j < heatmapResolution; j++) {
+          const x1 = inputBounds[0] + i * step;
+          const x2 = inputBounds[0] + j * step;
+          const result = network.forward([x1, x2]);
+          
+          // Store activations for each layer and neuron
+          result.activations.forEach((layerActivations, layerIndex) => {
+            if (layerIndex === 0) return; // Skip input layer
+            
+            layerActivations.forEach((activation, neuronIndex) => {
+              const key = `${layerIndex}-${neuronIndex}`;
+              if (!gridActivations.has(key)) {
+                gridActivations.set(key, []);
+              }
+              gridActivations.get(key).push({
+                i, j, value: activation
+              });
+            });
+          });
+        }
+      }
+    }
+
 
     // Calculate positions and dynamic node size
     const padding = 60; // Padding from edges
@@ -174,25 +205,6 @@ const NetworkVisualization = ({
       // Use dynamic node size
       const borderRadius = nodeSize * 0.16; // Proportional rounded corners
       
-      // Helper function to compute activation for a neuron
-      const computeActivation = (layerIndex, neuronIndex, input) => {
-        const result = network.forward(input);
-        if (layerIndex === 0) {
-          // Input layer - just return the input value
-          return input[neuronIndex];
-        } else {
-          // Get activation from the appropriate layer
-          // result.activations[0] is the input
-          // result.activations[1] is first hidden layer
-          // result.activations[2] is second hidden layer
-          // result.activations[3] is output layer
-          const layerActivations = result.activations[layerIndex];
-          if (!layerActivations || neuronIndex >= layerActivations.length) {
-            return 0;
-          }
-          return layerActivations[neuronIndex];
-        }
-      };
 
       // Create color scale for heatmaps
       // Adjust domain based on activation function
@@ -249,27 +261,20 @@ const NetworkVisualization = ({
             .attr('fill', `url(#${gradientId})`);
         } else {
           // Hidden and output layer nodes - show activation heatmap
-          // Generate heatmap data
-          const heatmapData = [];
-          const step = (inputBounds[1] - inputBounds[0]) / heatmapResolution;
+          // Use pre-computed activations
+          const key = `${node.layerIndex}-${node.neuronIndex}`;
+          const nodeActivations = gridActivations.get(key) || [];
           const cellSize = nodeSize / heatmapResolution;
           
           // Add small overlap to prevent white lines
           const overlap = 0.5;
           
-          for (let i = 0; i < heatmapResolution; i++) {
-            for (let j = 0; j < heatmapResolution; j++) {
-              const x1 = inputBounds[0] + i * step;
-              const x2 = inputBounds[0] + j * step;
-              const activation = computeActivation(node.layerIndex, node.neuronIndex, [x1, x2]);
-              
-              heatmapData.push({
-                x: i * cellSize,
-                y: j * cellSize,
-                value: activation || 0
-              });
-            }
-          }
+          // Convert pre-computed activations to heatmap data
+          const heatmapData = nodeActivations.map(item => ({
+            x: item.i * cellSize,
+            y: item.j * cellSize,
+            value: item.value || 0
+          }));
 
           // Draw heatmap cells with overlap
           heatmapGroup.selectAll('rect')
